@@ -70,6 +70,9 @@ public abstract class BaseModel : IModel, IComponentsHolder, IComponentsEnableMo
 		_components.Clean();
 		_components = null;
 
+		MethodPermitter.Clear();
+		MethodPermitter = null;
+
 		LinkingController = null;
 	}
 

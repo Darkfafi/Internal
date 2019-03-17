@@ -31,6 +31,7 @@
 	public void EndState()
 	{
 		OnEndState();
+		MethodPermitter.Clear();
 	}
 
 	protected abstract void OnSetupState();

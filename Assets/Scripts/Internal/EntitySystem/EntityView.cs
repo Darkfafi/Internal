@@ -33,7 +33,6 @@ public class EntityView : MonoBaseView
 		UpdateTransformComponent();
 	}
 
-
 	private void UpdateTransformComponent()
 	{
 		if(ViewDeltaTransform != null && SelfModel != null && !SelfModel.IsDestroyed && !IgnoreModelTransform)

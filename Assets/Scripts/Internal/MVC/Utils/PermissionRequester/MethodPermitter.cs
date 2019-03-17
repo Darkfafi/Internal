@@ -40,6 +40,12 @@ public class MethodPermitter
 		}
 	}
 
+	public void Clear()
+	{
+		_blockedActions.Clear();
+		_blockedActions.Clear();
+	}
+
 	private void PermissionGrantedSignal(int permissionID)
 	{
 		if(_permissionBlockers.ContainsKey(permissionID))
