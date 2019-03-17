@@ -57,6 +57,15 @@
 		}
 	}
 
+	public override void Clean()
+	{
+		EntityModel[] models = GetAll();
+		for(int i = 0; i < models.Length; i++)
+		{
+			models[i].Destroy();
+		}
+	}
+
 	private void OnDestroyEvent(BaseModel destroyedEntity)
 	{
 		Unregister((EntityModel)destroyedEntity);
