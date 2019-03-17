@@ -66,10 +66,11 @@ public abstract class MonoBaseView : MonoBehaviour, IView
 
 	protected virtual void ViewDestruction()
 	{
-		Destroy(gameObject);
+		if(gameObject != null)
+			Destroy(gameObject);
 	}
 
-	private void OnDestroy()
+	protected void OnDestroy()
 	{
 		DestroyView();
 	}
