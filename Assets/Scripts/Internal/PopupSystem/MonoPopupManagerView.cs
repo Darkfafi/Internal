@@ -44,7 +44,7 @@ public class MonoPopupManagerView : MonoBaseView
 	private void CreateViewForPopup(BasePopupModel popup)
 	{
 		MonoBaseView popupViewPrefab = GetPopupViewPrefab(popup.PopupModelID);
-		MonoBaseView popupViewInstance = Instantiate(popupViewPrefab);
+		MonoBaseView popupViewInstance = Instantiate(popupViewPrefab, popup.PopupState == BasePopupModel.PopupModelState.Focussed ? _focussedPopupHolder : _unfocussedPopupsHolder);
 		Controller.Link(popup, popupViewInstance);
 	}
 
