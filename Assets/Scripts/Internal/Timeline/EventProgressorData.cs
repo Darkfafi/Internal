@@ -15,4 +15,16 @@ public struct EventProgressorData
 	public int ValueToSetKeyAt;
 	public KeyValuePair<string, bool> KeyValuePairToSet;
 	public string OptionalStringValue;
+
+	public static EventProgressorData Default(string name)
+	{
+		return new EventProgressorData()
+		{
+			ProgressorName = name,
+			EndEventType = EventEndType.AtGoalReach,
+			ValueToSetKeyAt = VALUE_AT_GOAL,
+			KeyValuePairToSet = new KeyValuePair<string, bool>(),
+			OptionalStringValue = "",
+		};
+	}
 }

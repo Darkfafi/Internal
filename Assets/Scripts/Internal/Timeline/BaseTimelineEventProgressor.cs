@@ -42,7 +42,7 @@ public abstract class BaseTimelineEventProgressor
 			if(GoalValue == 0)
 				return 0f;
 
-			return CurrentValue / GoalValue;
+			return (float)CurrentValue / GoalValue;
 		}
 	}
 
