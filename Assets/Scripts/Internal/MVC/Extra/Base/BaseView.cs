@@ -10,6 +10,7 @@ public abstract class MonoBaseView : MonoBehaviour, IView
 	public Action<MonoBaseView> ViewDestroyedEvent;
 
 	private BaseView _baseView = new BaseView();
+	private bool _selfMonoBehaviourDestroy = false;
 
 	public IMethodPermitter LinkingController
 	{
@@ -67,23 +68,27 @@ public abstract class MonoBaseView : MonoBehaviour, IView
 	protected virtual void ViewDestruction()
 	{
 		if(gameObject != null)
+		{
+			_selfMonoBehaviourDestroy = true;
 			Destroy(gameObject);
+		}
 	}
 
 	protected void OnDestroy()
 	{
-		DestroyView();
+		if(!_selfMonoBehaviourDestroy)
+		{
+			PreUnityViewDestruction();
+			DestroyView();
+			PostUnityViewDestruction();
+		}
 	}
 
-	protected virtual void OnPreViewReady()
-	{
-	}
-	protected virtual void OnViewReady()
-	{
-	}
-	protected virtual void OnViewDestroy()
-	{
-	}
+	protected virtual void OnPreViewReady() { }
+	protected virtual void OnViewReady() { }
+	protected virtual void OnViewDestroy() { }
+	protected virtual void PreUnityViewDestruction() { }
+	protected virtual void PostUnityViewDestruction() { }
 }
 
 /// <summary>
