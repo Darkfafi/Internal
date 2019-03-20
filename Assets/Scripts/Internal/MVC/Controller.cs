@@ -29,6 +29,16 @@ public class Controller : IAbstractController
 
 	private Controller(IModel model, IView view)
 	{
+		if(MVCUtil.HasView(model))
+		{
+			throw new Exception(string.Format("{0} already has view {1} connected to it!", model, MVCUtil.GetView<IView>(model)));
+		}
+
+		if(MVCUtil.HasModel(view))
+		{
+			throw new Exception(string.Format("{0} already has model {1} connected to it!", view, MVCUtil.GetModel <IModel>(view)));
+		}
+
 		CoreModel = model;
 		CoreView = view;
 
