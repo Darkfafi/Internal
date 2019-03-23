@@ -7,6 +7,7 @@ public class PopupManagerModel : BaseModel
 	public event Action<BasePopupModel> OpenedPopupEvent;
 	public event Action<BasePopupModel> PopupFocussedEvent;
 	public event Action<BasePopupModel> PopupUnfocussedEvent;
+	public event Action<BasePopupModel> LastPopupClosedEvent;
 
 	public BasePopupModel CurrentlyFocussedPopup
 	{
@@ -110,7 +111,19 @@ public class PopupManagerModel : BaseModel
 				_openPopups.Remove(popup);
 				RefreshFocus();
 				if(_openPopups.Count == 0)
-					OpenNextRequest();
+				{
+					if(_requestedPopups.Count > 0)
+					{
+						OpenNextRequest();
+					}
+					else
+					{
+						if(LastPopupClosedEvent != null)
+						{
+							LastPopupClosedEvent(popup);
+						}
+					}
+				}
 				break;
 			case BasePopupModel.PopupModelState.Unfocussed:
 				if(CurrentlyFocussedPopup == popup)
