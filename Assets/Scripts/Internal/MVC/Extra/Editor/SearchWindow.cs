@@ -7,6 +7,7 @@ public class SearchWindow : EditorWindow
 	private Action<int> _onSelectionCallback;
 	private object[] _selectionItems;
 	private string _searchString = "";
+	private Vector2 _scrollPosition = Vector2.zero;
 
 	public static SearchWindow OpenWindow(Action<int> onSelectionCallback, params object[] itemsToSelectFrom)
 	{
@@ -20,6 +21,7 @@ public class SearchWindow : EditorWindow
 
 	public void Setup(Action<int> onSelectionCallback, params object[] itemsToSelectFrom)
 	{
+		_scrollPosition = Vector2.zero;
 		_onSelectionCallback = onSelectionCallback;
 		_selectionItems = itemsToSelectFrom;
 	}
@@ -35,6 +37,7 @@ public class SearchWindow : EditorWindow
 		if(focusedWindow)
 			GUI.FocusControl("SearchBar");
 
+		_scrollPosition = GUILayout.BeginScrollView(_scrollPosition, false, true);
 		// Selection
 		int selectedIndex = -1;
 		int showCount = 0;
@@ -52,6 +55,8 @@ public class SearchWindow : EditorWindow
 				showCount++;
 			}
 		}
+
+		GUILayout.EndScrollView();
 
 		if(selectedIndex >= 0)
 		{
