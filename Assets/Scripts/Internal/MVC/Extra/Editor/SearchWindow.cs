@@ -55,7 +55,9 @@ public class SearchWindow : EditorWindow
 
 		if(selectedIndex >= 0)
 		{
-			_onSelectionCallback(selectedIndex);
+			Action<int> callback = _onSelectionCallback;
+			_onSelectionCallback = null;
+			callback(selectedIndex);
 		}
 	}
 
@@ -88,8 +90,12 @@ public class SearchWindow : EditorWindow
 
 	private void OnDestroy()
 	{
-		_onSelectionCallback(-1);
-		_onSelectionCallback = null;
+		if(_onSelectionCallback != null)
+		{
+			_onSelectionCallback(-1);
+			_onSelectionCallback = null;
+		}
+
 		_selectionItems = null;
 	}
 }
