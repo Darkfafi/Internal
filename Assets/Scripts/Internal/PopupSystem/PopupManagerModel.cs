@@ -40,7 +40,7 @@ public class PopupManagerModel : BaseModel
 			UnityEngine.Debug.LogError("Trying to Request an already used popup. Request denied.");
 			return;
 		}
-
+		popupModel.Init(this);
 		_requestedPopups.Insert(stack ? 0 : _requestedPopups.Count, popupModel);
 		if(_openPopups.Count == 0 || stack)
 		{
@@ -55,6 +55,11 @@ public class PopupManagerModel : BaseModel
 		{
 			CurrentlyFocussedPopup.Close();
 		}
+	}
+
+	protected override void OnModelDestroy()
+	{
+		CloseAll();
 	}
 
 	private void OpenNextRequest()

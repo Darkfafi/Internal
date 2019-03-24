@@ -26,11 +26,25 @@ public abstract class BasePopupModel : BaseModel
 		}
 	}
 
+	protected PopupManagerModel PopupManagerModel
+	{
+		get; private set;
+	}
+
 	private PopupModelState _popupState = PopupModelState.None;
 
 	public BasePopupModel()
 	{
 		SetPopupState(PopupModelState.InRequest);
+	}
+
+	public void Init(PopupManagerModel popupManagerModel)
+	{
+		if(PopupManagerModel != null)
+			return;
+
+		PopupManagerModel = popupManagerModel;
+		Initialized();
 	}
 
 	public void Open()
@@ -79,6 +93,11 @@ public abstract class BasePopupModel : BaseModel
 		}
 	}
 
+	protected virtual void Initialized()
+	{
+
+	}
+
 	protected virtual void OnOpen()
 	{
 
@@ -107,6 +126,7 @@ public abstract class BasePopupModel : BaseModel
 	protected virtual void Clean()
 	{
 		Destroy();
+		PopupManagerModel = null;
 	}
 
 	private bool SetPopupState(PopupModelState newState)
