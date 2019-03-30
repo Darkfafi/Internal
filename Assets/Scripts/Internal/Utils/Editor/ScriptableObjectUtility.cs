@@ -5,7 +5,7 @@ public static class ScriptableObjectUtility
 {
 	public static void CreateAsset<T>() where T : ScriptableObject
 	{
-		CreateAsset<T>(nameof(T));
+		CreateAsset<T>(typeof(T).FullName);
 	}
 
 	public static void CreateAsset<T>(string specifiedName) where T : ScriptableObject
