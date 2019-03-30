@@ -61,8 +61,9 @@ public static class StaticDatabaseParser
 				{
 					props = new Properties();
 					properties.AddProperties(propertiesHolderKey, props);
-					properties = props;
 				}
+
+				properties = props;
 			}
 
 			//id->path.path.path = value (insert into top part)
