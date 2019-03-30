@@ -3,10 +3,25 @@ using System.Collections.Generic;
 
 public class StaticDatabase<T> where T : IStaticDatabaseData
 {
+	public const string PROPERTY_KEY_VERSION = "version";
+
+	public Properties Properties
+	{
+		get; private set;
+	}
+
+	public ulong Version
+	{
+		get; private set;
+	}
+
 	private Dictionary<string, T> _allData = new Dictionary<string, T>();
 
-	public StaticDatabase(T[] allData)
+	public StaticDatabase(T[] allData, Properties databaseProperties)
 	{
+		Properties = databaseProperties;
+		Version = Properties.GetProp(PROPERTY_KEY_VERSION).GetValue(0UL);
+
 		for(int i = 0; i < allData.Length; i++)
 		{
 			T data = allData[i];

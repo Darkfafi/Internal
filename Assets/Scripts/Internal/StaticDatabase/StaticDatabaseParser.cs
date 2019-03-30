@@ -4,6 +4,8 @@ using UnityEngine;
 
 public static class StaticDatabaseParser
 {
+	public const string DATABASE_DATA_ID = "DATABASE";
+
 	public static StaticDatabase<T> ParseDatabase<T>(string databaseTextFile) where T : struct, IStaticDatabaseData
 	{
 		// Format: dataID->obj.obj.obj = value;
@@ -12,6 +14,7 @@ public static class StaticDatabaseParser
 
 		List<T> databaseEntries = new List<T>();
 		Dictionary<string, Properties> entryToPropertiesMap = new Dictionary<string, Properties>();
+		Properties databaseProperties = new Properties();
 
 		string[] lines = databaseTextFile.Split(new [] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
 
@@ -69,11 +72,18 @@ public static class StaticDatabaseParser
 
 		foreach(var dataPair in entryToPropertiesMap)
 		{
-			T entry = default;
-			entry.SetProperties(dataPair.Key, dataPair.Value);
-			databaseEntries.Add(entry);
+			if(dataPair.Key != DATABASE_DATA_ID)
+			{
+				T entry = default;
+				entry.SetProperties(dataPair.Key, dataPair.Value);
+				databaseEntries.Add(entry);
+			}
+			else
+			{
+				databaseProperties = dataPair.Value;
+			}
 		}
 
-		return new StaticDatabase<T>(databaseEntries.ToArray());
+		return new StaticDatabase<T>(databaseEntries.ToArray(), databaseProperties);
 	}
 }
