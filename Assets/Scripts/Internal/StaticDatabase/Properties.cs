@@ -1,49 +1,83 @@
 ﻿using System.Collections.Generic;
 
-public struct Properties
+public class Properties
 {
-	private Dictionary<string, Property> _propertiesMap;
+	private Dictionary<string, Property> _propertiesMap = new Dictionary<string, Property>();
+	private Dictionary<string, Properties> _holdingProperties = new Dictionary<string, Properties>();
 
 	public Properties(params Property[] properties)
 	{
-		_propertiesMap = new Dictionary<string, Property>();
 		for(int i = 0; i < properties.Length; i++)
 		{
-			_propertiesMap[properties[i].Path] = properties[i];
+			AddProperty(properties[i]);
 		}
 	}
 
-	public Property GetProp(string path)
+	public void AddProperty(Property property)
 	{
-		if(TryGetProp(path, out Property v))
+		_propertiesMap[property.Key] = property;
+	}
+
+	public void AddProperties(string key, Properties properties)
+	{
+		_holdingProperties[key] = properties;
+	}
+
+	public Properties GetProps(string key, bool defaultIsSelf)
+	{
+		if(TryGetProps(key, out Properties v))
 		{
 			return v;
 		}
 
-		return new Property(path, null);
+		if(defaultIsSelf)
+			return this;
+
+		return null;
 	}
 
-	public string[] GetAllPropertyPaths()
+	public bool TryGetProps(string key, out Properties value)
+	{
+		if(string.IsNullOrEmpty(key))
+		{
+			value = this;
+			return true;
+		}
+
+		return _holdingProperties.TryGetValue(key, out value);
+	}
+
+	public Property GetProp(string key)
+	{
+		if(TryGetProp(key, out Property v))
+		{
+			return v;
+		}
+
+		return new Property(key, null);
+	}
+
+	public string[] GetAllPropertyKeys()
 	{
 		string[] keys = new string[_propertiesMap.Count];
 		_propertiesMap.Keys.CopyTo(keys, 0);
 		return keys;
 	}
 
-	public bool TryGetProp(string path, out Property value)
+	public bool TryGetProp(string key, out Property value)
 	{
-		return _propertiesMap.TryGetValue(path, out value);
+		return _propertiesMap.TryGetValue(key, out value);
 	}
 }
 
 public struct Property
 {
-	public string Path;
+	public string Key;
 	public string Value;
 
-	public Property(string path, string value)
+	public Property(string key, string value)
 	{
-		Path = path;
+		Key = key;
 		Value = value;
 	}
 

@@ -7,10 +7,11 @@ public static class StaticDatabaseParser
 	public static StaticDatabase<T> ParseDatabase<T>(string databaseTextFile) where T : struct, IStaticDatabaseData
 	{
 		// Format: dataID->obj.obj.obj = value;
-		// Concept: KEY/PATH = VALUE
+		// Concept: id(properties)->key = value
+		// Concept: id(properties)->props.props.key = value
 
 		List<T> databaseEntries = new List<T>();
-		Dictionary<string, List<Property>> entryToPropertiesMap = new Dictionary<string, List<Property>>();
+		Dictionary<string, Properties> entryToPropertiesMap = new Dictionary<string, Properties>();
 
 		string[] lines = databaseTextFile.Split(new [] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
 
@@ -38,24 +39,38 @@ public static class StaticDatabaseParser
 				continue;
 			}
 
-			string path = pathAndValue[0].Trim();
+			string[] fullPath = pathAndValue[0].Trim().Split('.');
+			Array.Reverse(fullPath);
+			Stack<string> path = new Stack<string>(fullPath);
 			string value = pathAndValue[1].Trim();
 
-			Property property = new Property(path, value);
-
-			if(!entryToPropertiesMap.TryGetValue(key, out List<Property> properties))
+			if(!entryToPropertiesMap.TryGetValue(key, out Properties properties))
 			{
-				properties = new List<Property>();
+				properties = new Properties();
 				entryToPropertiesMap[key] = properties;
 			}
 
-			properties.Add(property);
+			// id->path.path.path (get to top part / create layers to top)
+			while(path.Count > 1)
+			{
+				string propertiesHolderKey = path.Pop();
+				if(!properties.TryGetProps(propertiesHolderKey, out Properties props))
+				{
+					props = new Properties();
+					properties.AddProperties(propertiesHolderKey, props);
+					properties = props;
+				}
+			}
+
+			//id->path.path.path = value (insert into top part)
+			Property property = new Property(path.Pop(), value);
+			properties.AddProperty(property);
 		}
 
 		foreach(var dataPair in entryToPropertiesMap)
 		{
 			T entry = default;
-			entry.SetProperties(dataPair.Key, new Properties(dataPair.Value.ToArray()));
+			entry.SetProperties(dataPair.Key, dataPair.Value);
 			databaseEntries.Add(entry);
 		}
 
