@@ -23,6 +23,13 @@ public struct Properties
 		return new Property(path, null);
 	}
 
+	public string[] GetAllPropertyPaths()
+	{
+		string[] keys = new string[_propertiesMap.Count];
+		_propertiesMap.Keys.CopyTo(keys, 0);
+		return keys;
+	}
+
 	public bool TryGetProp(string path, out Property value)
 	{
 		return _propertiesMap.TryGetValue(path, out value);
@@ -210,6 +217,6 @@ public struct Property
 	public bool TryGetValue(out string value)
 	{
 		value = Value;
-		return string.IsNullOrEmpty(value);
+		return !string.IsNullOrEmpty(value);
 	}
 }

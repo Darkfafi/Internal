@@ -34,7 +34,7 @@ public static class StaticDatabaseParser
 
 			if(pathAndValue.Length != 2)
 			{
-				Debug.LogWarning($"Skipped line {i} for path to value is in format x->a.b.c = v");
+				Debug.LogWarning($"Skipped line {i} for path to value is not in format x->a.b.c = v");
 				continue;
 			}
 
