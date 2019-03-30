@@ -53,4 +53,6 @@ public interface IStaticDatabaseData
 	{
 		get;
 	}
+
+	void SetProperties(string dataID, Properties properties);
 }
