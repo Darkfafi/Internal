@@ -3,6 +3,8 @@
 	public delegate void FrameTickHandler(float deltaTime, float timeScale);
 
 	public float TimeScale = 1f;
+	public bool Paused;
+
 	public double SecondsPassedSessionUnscaled
 	{
 		get; private set;
@@ -16,12 +18,15 @@
 
 	public void FrameTick(float deltaTime)
 	{
-		SecondsPassedSessionUnscaled += deltaTime;
-		SecondsPassedSessionScaled += deltaTime * TimeScale;
-
-		if(_frameTickAction != null)
+		if(!Paused)
 		{
-			_frameTickAction(deltaTime, TimeScale);
+			SecondsPassedSessionUnscaled += deltaTime;
+			SecondsPassedSessionScaled += deltaTime * TimeScale;
+
+			if(_frameTickAction != null)
+			{
+				_frameTickAction(deltaTime, TimeScale);
+			}
 		}
 	}
 

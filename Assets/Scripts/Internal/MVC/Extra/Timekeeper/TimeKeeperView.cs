@@ -21,4 +21,12 @@ public class TimekeeperView : MonoBaseView
 	{
 		_model = null;
 	}
+
+	private void OnApplicationPause(bool pause)
+	{
+		if(_model != null)
+		{
+			_model.Paused = pause;
+		}
+	}
 }
