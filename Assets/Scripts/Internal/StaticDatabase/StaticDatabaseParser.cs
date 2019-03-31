@@ -42,9 +42,6 @@ public static class StaticDatabaseParser
 				continue;
 			}
 
-			string[] fullPath = pathAndValue[0].Trim().Split('.');
-			Array.Reverse(fullPath);
-			Stack<string> path = new Stack<string>(fullPath);
 			string value = pathAndValue[1].Trim();
 
 			if(!entryToPropertiesMap.TryGetValue(key, out Properties properties))
@@ -53,21 +50,10 @@ public static class StaticDatabaseParser
 				entryToPropertiesMap[key] = properties;
 			}
 
-			// id->path.path.path (get to top part / create layers to top)
-			while(path.Count > 1)
-			{
-				string propertiesHolderKey = path.Pop();
-				if(!properties.TryGetProps(propertiesHolderKey, out Properties props))
-				{
-					props = new Properties();
-					properties.AddProperties(propertiesHolderKey, props);
-				}
-
-				properties = props;
-			}
+			properties = GetTopProperties(pathAndValue[0], properties, true, out string propKey);
 
 			//id->path.path.path = value (insert into top part)
-			Property property = new Property(path.Pop(), value);
+			Property property = new Property(propKey, value);
 			properties.AddProperty(property);
 		}
 
@@ -86,5 +72,36 @@ public static class StaticDatabaseParser
 		}
 
 		return new StaticDatabase<T>(databaseEntries.ToArray(), databaseProperties);
+	}
+
+
+	public static Properties GetTopProperties(string path, Properties baseProperties, bool addIfNotAvailable, out string propKey)
+	{
+		string[] fullPath = path.Trim().Split('.');
+		Array.Reverse(fullPath);
+		Stack<string> p = new Stack<string>(fullPath);
+
+		// id->path.path.path (get to top part / create layers to top)
+		while(p.Count > 1)
+		{
+			string propertiesHolderKey = p.Pop();
+			if(!baseProperties.TryGetProps(propertiesHolderKey, out Properties props))
+			{
+				if(addIfNotAvailable)
+				{
+					props = new Properties();
+					baseProperties.AddProperties(propertiesHolderKey, props);
+				}
+				else
+				{
+					throw new Exception($"Path {path} invalid. No properties found under key {propertiesHolderKey}");
+				}
+			}
+
+			baseProperties = props;
+		}
+
+		propKey = p.Pop();
+		return baseProperties;
 	}
 }
