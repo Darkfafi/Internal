@@ -10,11 +10,6 @@
 		PropertiesData = new PropertiesData(this);
 	}
 
-	public void OverridePropertiesData(PropertiesData data)
-	{
-		PropertiesData = data;
-	}
-
 	public void SetProperty(string key, string value)
 	{
 		PropertiesData.SetProperty(key, value);
