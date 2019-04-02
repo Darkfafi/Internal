@@ -50,11 +50,11 @@ public static class StaticDatabaseParser
 				entryToPropertiesMap[key] = properties;
 			}
 
-			properties = GetTopProperties(pathAndValue[0], properties, true, out string propKey);
+			PropertiesData data = GetTopPropertiesData(pathAndValue[0], properties.PropertiesData, true, out string propKey);
 
 			//id->path.path.path = value (insert into top part)
 			Property property = new Property(propKey, value);
-			properties.AddProperty(property);
+			data.Parent.SetProperty(property);
 		}
 
 		foreach(var dataPair in entryToPropertiesMap)
@@ -62,7 +62,7 @@ public static class StaticDatabaseParser
 			if(dataPair.Key != DATABASE_DATA_ID)
 			{
 				T entry = default;
-				entry.SetProperties(dataPair.Key, dataPair.Value);
+				entry.SetProperties(dataPair.Key, dataPair.Value.PropertiesData);
 				databaseEntries.Add(entry);
 			}
 			else
@@ -74,8 +74,20 @@ public static class StaticDatabaseParser
 		return new StaticDatabase<T>(databaseEntries.ToArray(), databaseProperties);
 	}
 
+	public static PropertiesData GetTopPropertiesData(string path, PropertiesData basePropertiesData, out string propKey)
+	{
+		IProperties properties = GetTopPropertiesData(path, basePropertiesData, false, out propKey);
+		PropertiesData data = basePropertiesData;
 
-	public static Properties GetTopProperties(string path, Properties baseProperties, bool addIfNotAvailable, out string propKey)
+		if(properties is Properties)
+		{
+			data = ((Properties)properties).PropertiesData;
+		}
+
+		return data;
+	}
+
+	private static PropertiesData GetTopPropertiesData(string path, PropertiesData baseProperties, bool addIfNotAvailable, out string propKey)
 	{
 		string[] fullPath = path.Trim().Split('.');
 		Array.Reverse(fullPath);
@@ -85,12 +97,12 @@ public static class StaticDatabaseParser
 		while(p.Count > 1)
 		{
 			string propertiesHolderKey = p.Pop();
-			if(!baseProperties.TryGetProps(propertiesHolderKey, out Properties props))
+			if(!baseProperties.TryGetProps(propertiesHolderKey, out PropertiesData props))
 			{
 				if(addIfNotAvailable)
 				{
-					props = new Properties();
-					baseProperties.AddProperties(propertiesHolderKey, props);
+					props = new PropertiesData(new Properties());
+					baseProperties.SetProperties(propertiesHolderKey, props);
 				}
 				else
 				{

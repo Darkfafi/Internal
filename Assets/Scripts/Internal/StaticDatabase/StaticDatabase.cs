@@ -69,5 +69,5 @@ public interface IStaticDatabaseData
 		get;
 	}
 
-	void SetProperties(string dataID, Properties properties);
+	void SetProperties(string dataID, PropertiesData propertiesData);
 }
