@@ -41,6 +41,31 @@ public class StaticDatabase<T> where T : IStaticDatabaseData
 		return new Dictionary<string, T>(_allData);
 	}
 
+	public T[] GetData(Predicate<T> predicate)
+	{
+		List<T> allData = new List<T>();
+		foreach(var pair in _allData)
+		{
+			if(predicate(pair.Value))
+			{
+				allData.Add(pair.Value);
+			}
+		}
+		return allData.ToArray();
+	}
+
+	public T GetFirstData(Predicate<T> predicate)
+	{
+		TryGetData(predicate, out T data);
+		return data;
+	}
+
+	public T GetFirstData(string dataID)
+	{
+		_allData.TryGetValue(dataID, out T data);
+		return data;
+	}
+
 	public bool TryGetData(Predicate<T> predicate, out T data)
 	{
 		foreach(var pair in _allData)
