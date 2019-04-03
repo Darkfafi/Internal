@@ -25,6 +25,23 @@ public struct PropertiesData : IProperties
 		_holdingProperties = new Dictionary<string, PropertiesData>();
 	}
 
+	public PropertiesData Refresh()
+	{
+		Dictionary<string, PropertiesData> newDict = new Dictionary<string, PropertiesData>();
+
+		_propertiesMap = Parent.PropertiesData._propertiesMap;
+		_holdingProperties = Parent.PropertiesData._holdingProperties;
+
+		foreach(var pair in _holdingProperties)
+		{
+			newDict.Add(pair.Key, pair.Value.Refresh());
+		}
+
+		_holdingProperties = newDict;
+
+		return this;
+	}
+
 	public void SetProperty(Property property)
 	{
 		_propertiesMap[property.Key] = property;

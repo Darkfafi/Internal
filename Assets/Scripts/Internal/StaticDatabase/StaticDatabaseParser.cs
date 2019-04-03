@@ -62,7 +62,7 @@ public static class StaticDatabaseParser
 			if(dataPair.Key != DATABASE_DATA_ID)
 			{
 				T entry = default;
-				entry.SetProperties(dataPair.Key, dataPair.Value.PropertiesData);
+				entry.SetProperties(dataPair.Key, dataPair.Value.PropertiesData.Refresh());
 				databaseEntries.Add(entry);
 			}
 			else
@@ -102,7 +102,7 @@ public static class StaticDatabaseParser
 				if(addIfNotAvailable)
 				{
 					props = new PropertiesData(new Properties());
-					baseProperties.SetProperties(propertiesHolderKey, props);
+					baseProperties.Parent.SetProperties(propertiesHolderKey, props);
 				}
 				else
 				{
