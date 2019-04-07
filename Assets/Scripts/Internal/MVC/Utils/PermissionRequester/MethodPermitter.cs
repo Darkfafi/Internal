@@ -3,6 +3,10 @@ using System.Collections.Generic;
 
 public class MethodPermitter
 {
+	public delegate void ExecuteRequestedHandler(int permissionID);
+	public event ExecuteRequestedHandler ExecuteRequestingEvent;
+	public event ExecuteRequestedHandler ExecuteRequestedEvent;
+
 	private Dictionary<int, int> _permissionBlockers = new Dictionary<int, int>();
 	private Dictionary<int, Action> _blockedActions = new Dictionary<int, Action>();
 
@@ -23,6 +27,11 @@ public class MethodPermitter
 
 	public void ExecuteWhenPermitted(int permissionID, Action method)
 	{
+		if(ExecuteRequestingEvent != null)
+		{
+			ExecuteRequestingEvent(permissionID);
+		}
+
 		if(!_permissionBlockers.ContainsKey(permissionID))
 		{
 			method(); // No Blocker, so execute method because we have permission
@@ -37,6 +46,11 @@ public class MethodPermitter
 			{
 				_blockedActions.Add(permissionID, method);
 			}
+		}
+
+		if(ExecuteRequestedEvent != null)
+		{
+			ExecuteRequestedEvent(permissionID);
 		}
 	}
 
