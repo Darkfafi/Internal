@@ -3,7 +3,7 @@
 	public delegate void FrameTickHandler(float deltaTime, float timeScale);
 
 	public float TimeScale = 1f;
-	public bool Paused;
+	public bool Paused = false;
 
 	public double SecondsPassedSessionUnscaled
 	{

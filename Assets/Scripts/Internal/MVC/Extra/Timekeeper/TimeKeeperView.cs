@@ -3,6 +3,7 @@
 public class TimekeeperView : MonoBaseView
 {
 	private TimekeeperModel _model;
+	private bool? onApplicationPauseState = null;
 
 	protected override void OnViewReady()
 	{
@@ -13,7 +14,7 @@ public class TimekeeperView : MonoBaseView
 	{
 		if(_model != null)
 		{
-			_model.FrameTick(Time.unscaledDeltaTime);
+			_model.FrameTick(Time.deltaTime);
 		}
 	}
 
@@ -24,9 +25,23 @@ public class TimekeeperView : MonoBaseView
 
 	private void OnApplicationPause(bool pause)
 	{
+		OnApplicationFocus(!pause);
+	}
+
+	private void OnApplicationFocus(bool focussed)
+	{
 		if(_model != null)
 		{
-			_model.Paused = pause;
+			if(focussed)
+			{
+				_model.Paused = onApplicationPauseState.HasValue ? onApplicationPauseState.Value : false;
+				onApplicationPauseState = null;
+			}
+			else if(!onApplicationPauseState.HasValue)
+			{
+				onApplicationPauseState = _model.Paused;
+				_model.Paused = true;
+			}
 		}
 	}
 }
