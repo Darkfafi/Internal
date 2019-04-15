@@ -15,36 +15,26 @@ public class StaticDatabase<T> where T : struct, IStaticDatabaseData
 		get; private set;
 	}
 
-	private Dictionary<string, T> _allData = new Dictionary<string, T>();
+	private Dictionary<string, T> _prototypeData = new Dictionary<string, T>();
+	private Dictionary<string, Properties> _allData = new Dictionary<string, Properties>();
 
-	public StaticDatabase(T[] allData, Properties databaseProperties)
+	public StaticDatabase(Dictionary<string, Properties> allData, Properties databaseProperties)
 	{
 		Properties = databaseProperties;
 		Version = Properties.GetProp(PROPERTY_KEY_VERSION).GetValue(0UL);
 
-		for(int i = 0; i < allData.Length; i++)
+		_allData = allData;
+
+		foreach(var pair in _allData)
 		{
-			T data = allData[i];
-
-			if(_allData.ContainsKey(data.DataID))
-			{
-				UnityEngine.Debug.LogWarningFormat("StaticDatabase `{0}` Already containing data with ID `{1}`. Data skipped.", GetType().Name, data.DataID);
-				continue;
-			}
-
-			_allData.Add(data.DataID, data);
+			_prototypeData.Add(pair.Key, CreateData(pair.Key));
 		}
-	}
-
-	public Dictionary<string, T> GetAllDataCopy()
-	{
-		return new Dictionary<string, T>(_allData);
 	}
 
 	public T[] GetData(Predicate<T> predicate)
 	{
 		List<T> allData = new List<T>();
-		foreach(var pair in _allData)
+		foreach(var pair in _prototypeData)
 		{
 			if(predicate(pair.Value))
 			{
@@ -62,17 +52,17 @@ public class StaticDatabase<T> where T : struct, IStaticDatabaseData
 
 	public T GetFirstData(string dataID)
 	{
-		_allData.TryGetValue(dataID, out T data);
+		GetFirstData(dataID, out T data);
 		return data;
 	}
 
 	public bool GetFirstData(Predicate<T> predicate, out T data)
 	{
-		foreach(var pair in _allData)
+		foreach(var pair in _prototypeData)
 		{
 			if(predicate(pair.Value))
 			{
-				data = pair.Value;
+				data = CreateData(pair.Key);
 				return true;
 			}
 		}
@@ -83,7 +73,21 @@ public class StaticDatabase<T> where T : struct, IStaticDatabaseData
 
 	public bool GetFirstData(string dataID, out T data)
 	{
-		return _allData.TryGetValue(dataID, out data);
+		if(_allData.ContainsKey(dataID))
+		{
+			data = CreateData(dataID);
+			return true;
+		}
+
+		data = default(T);
+		return false;
+	}
+
+	private T CreateData(string id)
+	{
+		T data = default;
+		data.SetProperties(id, _allData[id].Clone());
+		return data;
 	}
 }
 

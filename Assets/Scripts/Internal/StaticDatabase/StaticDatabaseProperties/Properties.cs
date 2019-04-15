@@ -8,15 +8,11 @@ public class Properties
 	public Properties Clone()
 	{
 		Properties newInstance = new Properties();
-
-		foreach(var pair in _propertiesMap)
-		{
-			newInstance._propertiesMap.Add(pair.Key, pair.Value);
-		}
+		newInstance._propertiesMap = new Dictionary<string, Property>(_propertiesMap);
 
 		foreach(var pair in _holdingProperties)
 		{
-			newInstance._holdingProperties.Add(pair.Key, pair.Value);
+			newInstance._holdingProperties.Add(pair.Key, pair.Value.Clone());
 		}
 
 		return newInstance;

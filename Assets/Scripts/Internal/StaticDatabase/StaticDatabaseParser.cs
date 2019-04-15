@@ -12,9 +12,7 @@ public static class StaticDatabaseParser
 		// Concept: id(properties)->key = value
 		// Concept: id(properties)->props.props.key = value
 
-		List<T> databaseEntries = new List<T>();
 		Dictionary<string, Properties> entryToPropertiesMap = new Dictionary<string, Properties>();
-		Properties databaseProperties = new Properties();
 
 		string[] lines = databaseTextFile.Split(new [] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
 
@@ -57,21 +55,16 @@ public static class StaticDatabaseParser
 			topProperties.SetProperty(property);
 		}
 
-		foreach(var dataPair in entryToPropertiesMap)
+		if(entryToPropertiesMap.TryGetValue(DATABASE_DATA_ID, out Properties databaseProperties))
 		{
-			if(dataPair.Key != DATABASE_DATA_ID)
-			{
-				T entry = default;
-				entry.SetProperties(dataPair.Key, dataPair.Value);
-				databaseEntries.Add(entry);
-			}
-			else
-			{
-				databaseProperties = dataPair.Value;
-			}
+			entryToPropertiesMap.Remove(DATABASE_DATA_ID);
+		}
+		else
+		{
+			databaseProperties = new Properties();
 		}
 
-		return new StaticDatabase<T>(databaseEntries.ToArray(), databaseProperties);
+		return new StaticDatabase<T>(entryToPropertiesMap, databaseProperties);
 	}
 
 	public static Properties GetTopPropertiesData(string path, Properties baseProperties, out string propKey)
