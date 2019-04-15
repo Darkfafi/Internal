@@ -1,52 +1,85 @@
-﻿public class Properties : IProperties
+﻿using System.Collections.Generic;
+
+public class Properties
 {
-	public PropertiesData PropertiesData
-	{
-		get; private set;
-	}
+	private Dictionary<string, Property> _propertiesMap = new Dictionary<string, Property>();
+	private Dictionary<string, Properties> _holdingProperties = new Dictionary<string, Properties>();
 
-	public Properties()
+	public Properties Clone()
 	{
-		PropertiesData = new PropertiesData(this);
-	}
+		Properties newInstance = new Properties();
 
-	public void SetProperty(string key, string value)
-	{
-		PropertiesData.SetProperty(key, value);
+		foreach(var pair in _propertiesMap)
+		{
+			newInstance._propertiesMap.Add(pair.Key, pair.Value);
+		}
+
+		foreach(var pair in _holdingProperties)
+		{
+			newInstance._holdingProperties.Add(pair.Key, pair.Value);
+		}
+
+		return newInstance;
 	}
 
 	public void SetProperty(Property property)
 	{
-		PropertiesData.SetProperty(property);
+		_propertiesMap[property.Key] = property;
 	}
 
-	public void SetProperties(string key, PropertiesData properties)
+	public void SetProperty(string key, string value)
 	{
-		PropertiesData.SetProperties(key, properties);
+		SetProperty(new Property(key, value));
 	}
 
-	public PropertiesData GetProps(string key, bool defaultIsSelf)
+	public void SetProperties(string key, Properties properties)
 	{
-		return PropertiesData.GetProps(key, defaultIsSelf);
+		_holdingProperties[key] = properties;
 	}
 
-	public bool TryGetProps(string key, out PropertiesData value)
+	public Properties GetProps(string key, bool defaultIsSelf)
 	{
-		return PropertiesData.TryGetProps(key, out value);
+		if(TryGetProps(key, out Properties v))
+		{
+			return v;
+		}
+
+		if(defaultIsSelf)
+			return this;
+
+		return default;
+	}
+
+	public bool TryGetProps(string key, out Properties value)
+	{
+		if(string.IsNullOrEmpty(key))
+		{
+			value = this;
+			return true;
+		}
+
+		return _holdingProperties.TryGetValue(key, out value);
 	}
 
 	public Property GetProp(string key)
 	{
-		return PropertiesData.GetProp(key);
+		if(TryGetProp(key, out Property v))
+		{
+			return v;
+		}
+
+		return new Property(key, null);
 	}
 
 	public string[] GetAllPropertyKeys()
 	{
-		return PropertiesData.GetAllPropertyKeys();
+		string[] keys = new string[_propertiesMap.Count];
+		_propertiesMap.Keys.CopyTo(keys, 0);
+		return keys;
 	}
 
 	public bool TryGetProp(string key, out Property value)
 	{
-		return PropertiesData.TryGetProp(key, out value);
+		return _propertiesMap.TryGetValue(key, out value);
 	}
 }

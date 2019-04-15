@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-public class StaticDatabase<T> where T : IStaticDatabaseData
+public class StaticDatabase<T> where T : struct, IStaticDatabaseData
 {
 	public const string PROPERTY_KEY_VERSION = "version";
 
@@ -56,7 +56,7 @@ public class StaticDatabase<T> where T : IStaticDatabaseData
 
 	public T GetFirstData(Predicate<T> predicate)
 	{
-		TryGetData(predicate, out T data);
+		GetFirstData(predicate, out T data);
 		return data;
 	}
 
@@ -66,7 +66,7 @@ public class StaticDatabase<T> where T : IStaticDatabaseData
 		return data;
 	}
 
-	public bool TryGetData(Predicate<T> predicate, out T data)
+	public bool GetFirstData(Predicate<T> predicate, out T data)
 	{
 		foreach(var pair in _allData)
 		{
@@ -81,7 +81,7 @@ public class StaticDatabase<T> where T : IStaticDatabaseData
 		return false;
 	}
 
-	public bool TryGetData(string dataID, out T data)
+	public bool GetFirstData(string dataID, out T data)
 	{
 		return _allData.TryGetValue(dataID, out data);
 	}
@@ -94,5 +94,5 @@ public interface IStaticDatabaseData
 		get;
 	}
 
-	void SetProperties(string dataID, PropertiesData propertiesData);
+	void SetProperties(string dataID, Properties properties);
 }
