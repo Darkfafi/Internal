@@ -1,9 +1,30 @@
-﻿public class TimekeeperModel : BaseModel
+﻿using System;
+
+public class TimekeeperModel : BaseModel
 {
+	public event Action<bool> TimePauseStateChangedEvent;
 	public delegate void FrameTickHandler(float deltaTime, float timeScale);
 
 	public float TimeScale = 1f;
-	public bool Paused = false;
+
+	public bool Paused
+	{
+		get
+		{
+			return _isPaused;
+		}
+		set
+		{
+			if(_isPaused != value)
+			{
+				_isPaused = value;
+				if(TimePauseStateChangedEvent != null)
+				{
+					TimePauseStateChangedEvent(_isPaused);
+				}
+			}
+		}
+	}
 
 	public double SecondsPassedSessionUnscaled
 	{
@@ -15,6 +36,7 @@
 	}
 
 	private FrameTickHandler _frameTickAction;
+	private bool _isPaused = false;
 
 	public void FrameTick(float deltaTime)
 	{
