@@ -48,5 +48,6 @@ public struct LanguageData
 	{
 		public string Key;
 		public string Translation;
+		public string[] Tags;
 	}
 }
