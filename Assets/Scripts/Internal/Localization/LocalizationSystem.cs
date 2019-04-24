@@ -106,16 +106,24 @@ public class LocalizationSystem : ILocalizationSystem, ISettings
 	{
 		Language language = GetLanguage(languageKey);
 		string translation = string.Empty;
-		if(language != null)
+
+		if(int.TryParse(key, out int v))
 		{
-			if(!language.TryGetTranslation(key, out translation))
-			{
-				translation = "k> " + key;
-			}
+			return LanguageLocalize(languageKey, v);
 		}
 		else
 		{
-			translation = "l- " + (string.IsNullOrEmpty(languageKey) ? "No Language Specified" : languageKey);
+			if(language != null)
+			{
+				if(!language.TryGetTranslation(key, out translation))
+				{
+					translation = "k> " + key;
+				}
+			}
+			else
+			{
+				translation = "l- " + (string.IsNullOrEmpty(languageKey) ? "No Language Specified" : languageKey);
+			}
 		}
 
 		return new LocalizedString(languageKey, key, translation, formatParameters);
