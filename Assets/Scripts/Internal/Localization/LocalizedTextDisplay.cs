@@ -13,29 +13,57 @@ public class LocalizedTextDisplay : MonoBehaviour
 	[SerializeField]
 	private string _optionalLanguageId = null;
 
-	private Func<string> _translationGetter = null;
-
-	private LocalizationSystem _localizationSystem;
-
-	protected void Awake()
+	public Text TextComponent
 	{
-		_localizationSystem = SessionSettings.Request<LocalizationSystem>();
+		get
+		{
+			return _textComponentToAffect;
+		}
+	}
+
+	protected LocalizationSystem localizationSystem
+	{
+		get
+		{
+			if(_localizationSystem == null && !_deInit)
+			{
+				_localizationSystem = SessionSettings.Request<LocalizationSystem>();
+			}
+
+			return _localizationSystem;
+		}
+	}
+
+	private Func<string> _translationGetter = null;
+	private LocalizationSystem _localizationSystem;
+	private bool _deInit = false;
+
+	public void Refresh()
+	{
+		UpdateText(localizationSystem.LanguageID);
+	}
+
+	public void SetTranslationGetter(Func<string> translationGetter)
+	{
+		_translationGetter = translationGetter;
 	}
 
 	protected void OnEnable()
 	{
-		_localizationSystem.LanguageChangedEvent += OnLanguageChangedEvent;
-		OnLanguageChangedEvent(_localizationSystem.LanguageID);
+		localizationSystem.LanguageChangedEvent += OnLanguageChangedEvent;
+		Refresh();
 	}
 
 	protected void OnDisable()
 	{
-		_localizationSystem.LanguageChangedEvent -= OnLanguageChangedEvent;
+		localizationSystem.LanguageChangedEvent -= OnLanguageChangedEvent;
 	}
 
 	protected void OnDestroy()
 	{
+		_deInit = true;
 		_localizationSystem = null;
+		SetTranslationGetter(null);
 	}
 
 	private void OnLanguageChangedEvent(string languageID)
@@ -55,11 +83,11 @@ public class LocalizedTextDisplay : MonoBehaviour
 		{
 			if(int.TryParse(_localizedStringKey, out int v))
 			{
-				textToDisplay = _localizationSystem.Localize(languageID, v);
+				textToDisplay = localizationSystem.Localize(languageID, v);
 			}
 			else
 			{
-				textToDisplay = _localizationSystem.Localize(languageID, _localizedStringKey);
+				textToDisplay = localizationSystem.Localize(languageID, _localizedStringKey);
 			}
 		}
 
