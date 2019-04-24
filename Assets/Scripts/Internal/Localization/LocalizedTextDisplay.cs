@@ -40,12 +40,16 @@ public class LocalizedTextDisplay : MonoBehaviour
 
 	public void Refresh()
 	{
-		UpdateText(localizationSystem.LanguageID);
+		if(localizationSystem != null)
+		{
+			UpdateText(localizationSystem.LanguageID);
+		}
 	}
 
 	public void SetTranslationGetter(Func<string> translationGetter)
 	{
 		_translationGetter = translationGetter;
+		Refresh();
 	}
 
 	protected void OnEnable()
