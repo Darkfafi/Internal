@@ -60,7 +60,10 @@ public class LocalizedTextDisplay : MonoBehaviour
 
 	protected void Awake()
 	{
-		LocalizedString = localizationSystem.Localize(_localizedStringKey);
+		if(LocalizedString.IsEmpty())
+		{
+			LocalizedString = localizationSystem.Localize(_localizedStringKey);
+		}
 	}
 
 	protected void OnEnable()
