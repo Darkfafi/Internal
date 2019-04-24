@@ -82,4 +82,9 @@
 
 		return _translation;
 	}
+
+	public override string ToString()
+	{
+		return GetTranslation();
+	}
 }
