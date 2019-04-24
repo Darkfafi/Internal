@@ -104,7 +104,7 @@ public class LocalizationSystem : ILocalizationSystem, ISettings
 
 	public LocalizedString LanguageLocalizeFormat(string languageKey, string key, params LocalizedString[] formatParameters)
 	{
-		Language language = GetLanguage((l) => l.LanguageID == languageKey);
+		Language language = GetLanguage(languageKey);
 		string translation = string.Empty;
 		if(language != null)
 		{
