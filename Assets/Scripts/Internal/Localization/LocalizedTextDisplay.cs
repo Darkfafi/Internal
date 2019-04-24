@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 public class LocalizedTextDisplay : MonoBehaviour
@@ -21,6 +20,19 @@ public class LocalizedTextDisplay : MonoBehaviour
 		}
 	}
 
+	public LocalizedString LocalizedString
+	{
+		get
+		{
+			return _localizedString;
+		}
+		set
+		{
+			_localizedString = value;
+			Refresh();
+		}
+	}
+
 	protected LocalizationSystem localizationSystem
 	{
 		get
@@ -34,7 +46,7 @@ public class LocalizedTextDisplay : MonoBehaviour
 		}
 	}
 
-	private Func<string> _translationGetter = null;
+	private LocalizedString _localizedString;
 	private LocalizationSystem _localizationSystem;
 	private bool _deInit = false;
 
@@ -46,10 +58,9 @@ public class LocalizedTextDisplay : MonoBehaviour
 		}
 	}
 
-	public void SetTranslationGetter(Func<string> translationGetter)
+	protected void Awake()
 	{
-		_translationGetter = translationGetter;
-		Refresh();
+		LocalizedString = localizationSystem.Localize(_localizedStringKey);
 	}
 
 	protected void OnEnable()
@@ -67,34 +78,21 @@ public class LocalizedTextDisplay : MonoBehaviour
 	{
 		_deInit = true;
 		_localizationSystem = null;
-		SetTranslationGetter(null);
 	}
 
 	private void OnLanguageChangedEvent(string languageID)
 	{
-		UpdateText(string.IsNullOrEmpty(_optionalLanguageId) ? languageID : _optionalLanguageId);
+		UpdateText(languageID);
 	}
 
 	private void UpdateText(string languageID)
 	{
-		string textToDisplay = string.Empty;
-
-		if(_translationGetter != null)
+		languageID = string.IsNullOrEmpty(_optionalLanguageId) ? languageID : _optionalLanguageId;
+		if(LocalizedString.LanguageKey != languageID)
 		{
-			textToDisplay = _translationGetter();
-		}
-		else if(!string.IsNullOrEmpty(_localizedStringKey))
-		{
-			if(int.TryParse(_localizedStringKey, out int v))
-			{
-				textToDisplay = localizationSystem.Localize(languageID, v);
-			}
-			else
-			{
-				textToDisplay = localizationSystem.Localize(languageID, _localizedStringKey);
-			}
+			LocalizedString = LocalizedString.Relocalize(languageID);
 		}
 
-		_textComponentToAffect.text = textToDisplay;
+		_textComponentToAffect.text = LocalizedString.GetTranslation();
 	}
 }

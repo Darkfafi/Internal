@@ -72,35 +72,75 @@ public class LocalizationSystem : ILocalizationSystem, ISettings
 		return _languages.ToArray();
 	}
 
-	public string Localize(int number)
+	public LocalizedString Localize(int number)
 	{
-		return Localize(LanguageID, number);
+		return LanguageLocalize(LanguageID, number);
 	}
 
-	public string Localize(string key)
+	public LocalizedString Localize(string key)
 	{
-		return Localize(LanguageID, key);
+		return LanguageLocalize(LanguageID, key);
 	}
 
-	public string Localize(string languageKey, int number)
+	public LocalizedString LocalizeFormat(string key, params LocalizedString[] formatParameters)
 	{
-		return number.ToString();
+		return LanguageLocalizeFormat(LanguageID, key, formatParameters);
 	}
 
-	public string Localize(string languageKey, string key)
+	public LocalizedString LocalizeFormatKeys(string key, params object[] keys)
+	{
+		return LanguageLocalizeFormatKeys(LanguageID, key, keys);
+	}
+
+	public LocalizedString LanguageLocalize(string languageKey, int number)
+	{
+		return new LocalizedString(languageKey, number.ToString(), number.ToString());
+	}
+
+	public LocalizedString LanguageLocalize(string languageKey, string key)
+	{
+		return LanguageLocalizeFormat(languageKey, key, new LocalizedString[] { });
+	}
+
+	public LocalizedString LanguageLocalizeFormat(string languageKey, string key, params LocalizedString[] formatParameters)
 	{
 		Language language = GetLanguage((l) => l.LanguageID == languageKey);
+		string translation = string.Empty;
 		if(language != null)
 		{
-			if(language.TryGetTranslation(key, out string translation))
+			if(!language.TryGetTranslation(key, out translation))
 			{
-				return translation;
+				translation = "k> " + key;
 			}
-
-			return "k> " + key;
+		}
+		else
+		{
+			translation = "l- " + (string.IsNullOrEmpty(languageKey) ? "No Language Specified" : languageKey);
 		}
 
-		return "l- " + (string.IsNullOrEmpty(languageKey) ? "No Language Specified" : languageKey);
+		return new LocalizedString(languageKey, key, translation, formatParameters);
+	}
+
+	public LocalizedString LanguageLocalizeFormatKeys(string languageKey, string key, params object[] keys)
+	{
+		LocalizedString[] ls = new LocalizedString[keys.Length];
+		for(int i = 0; i < ls.Length; i++)
+		{
+			string s = keys[i].ToString();
+			LocalizedString localizedKey;
+			if(int.TryParse(s, out int v))
+			{
+				localizedKey = LanguageLocalize(languageKey, v);
+			}
+			else
+			{
+				localizedKey = LanguageLocalize(languageKey, s);
+			}
+
+			ls[i] = localizedKey;
+		}
+
+		return LanguageLocalizeFormat(languageKey, key, ls);
 	}
 
 	public Language GetLanguage(string languageID)
