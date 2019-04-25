@@ -32,12 +32,12 @@ public class TimekeeperView : MonoBaseView
 	{
 		if(_model != null)
 		{
-			if(focussed)
+			if(focussed && onApplicationPauseState.HasValue)
 			{
-				_model.Paused = onApplicationPauseState.HasValue ? onApplicationPauseState.Value : false;
+				_model.Paused = onApplicationPauseState.Value;
 				onApplicationPauseState = null;
 			}
-			else if(!onApplicationPauseState.HasValue)
+			else if(!focussed && !onApplicationPauseState.HasValue)
 			{
 				onApplicationPauseState = _model.Paused;
 				_model.Paused = true;
