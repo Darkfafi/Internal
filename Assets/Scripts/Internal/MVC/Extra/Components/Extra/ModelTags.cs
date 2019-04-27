@@ -7,7 +7,7 @@ public class ModelTags : BaseModelComponent
 	public event ModelTagHandler TagAddedEvent;
 	public event ModelTagHandler TagRemovedEvent;
 
-	public List<string> _tags = new List<string>();
+	private List<string> _tags = new List<string>();
 
 	protected override void Removed()
 	{
@@ -23,12 +23,28 @@ public class ModelTags : BaseModelComponent
 		TagRemovedEvent = null;
 	}
 
+	public bool IsEmpty
+	{
+		get
+		{
+			return _tags.Count == 0;
+		}
+	}
+
 	public string[] GetTags()
 	{
 		if(_tags == null)
 			return new string[] { };
 
 		return _tags.ToArray();
+	}
+
+	public void AddTags(string[] tags)
+	{
+		for(int i = 0; i < tags.Length; i++)
+		{
+			AddTag(tags[i]);
+		}
 	}
 
 	public void AddTag(string tag)
