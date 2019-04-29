@@ -20,18 +20,22 @@ public class TimelineEventSlot<T> where T : class, IGame
 		_conditionalPotentialEvents.Add(new ConditionalPotentialEventData(potentialEvent, keyConditions));
 	}
 
-	public ITimelineEvent CreateTimelineEvent(ITimelineState timelineState)
+	public PotentialEvent GetCurrentlyPotentialEvent(ITimelineState timelineState)
 	{
 		for(int i = 0; i < _conditionalPotentialEvents.Count; i++)
 		{
 			if(_conditionalPotentialEvents[i].IsValidToConditions(timelineState))
 			{
-				ITimelineEvent e = CreateTimelineEvent(timelineState, _conditionalPotentialEvents[i].PotentialEvent);
-				return e;
+				return _conditionalPotentialEvents[i].PotentialEvent;
 			}
 		}
 
-		return CreateTimelineEvent(timelineState, DefaultPotentialEvent);
+		return DefaultPotentialEvent;
+	}
+
+	public ITimelineEvent CreateTimelineEvent(ITimelineState timelineState)
+	{
+		return CreateTimelineEvent(timelineState, GetCurrentlyPotentialEvent(timelineState));
 	}
 
 	private ITimelineEvent CreateTimelineEvent(ITimelineState timelineState, PotentialEvent potentialEvent)

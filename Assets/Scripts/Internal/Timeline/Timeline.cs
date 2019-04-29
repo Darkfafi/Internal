@@ -6,6 +6,7 @@ public class Timeline<T> : IReadableTimeline<T> where T : class, IGame
 	public delegate void TimelineEventHandler(IReadableTimelineEvent timelineEvent);
 	public event Action TimelineEndReachedEvent;
 	public event Action TimelineStartReachedEvent;
+	public event TimelineEventHandler TimelineEventStartingEvent;
 	public event TimelineEventHandler TimelineEventStartedEvent;
 	public event TimelineEventHandler TimelineEventEndedEvent;
 	public event TimelineEventHandler TimelineUpwardsEvent;
@@ -81,6 +82,14 @@ public class Timeline<T> : IReadableTimeline<T> where T : class, IGame
 		_eventSlots.AddRange(slots);
 	}
 
+	public PotentialEvent GetCurrentlyPotentialEvent(int timelineIndex)
+	{
+		if(timelineIndex < 0 || timelineIndex >= _eventSlots.Count)
+			return null;
+
+		return _eventSlots[timelineIndex].GetCurrentlyPotentialEvent(TimelineState);
+	}
+
 	public bool SetNewTimelinePosition(int timelineIndex)
 	{
 		if(TimelinePosition == timelineIndex)
@@ -93,6 +102,12 @@ public class Timeline<T> : IReadableTimeline<T> where T : class, IGame
 		{
 			CurrentEvent = CurrentEventSlot.CreateTimelineEvent(TimelineState);
 			CurrentEvent.EventEndedEvent += OnEventEndedEvent;
+
+			if(TimelineEventStartingEvent != null)
+			{
+				TimelineEventStartingEvent(CurrentEvent);
+			}
+
 			CurrentEvent.ActivateEvent();
 
 			if(TimelineEventStartedEvent != null)
