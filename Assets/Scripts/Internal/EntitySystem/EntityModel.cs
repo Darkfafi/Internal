@@ -3,24 +3,50 @@ using UnityEngine;
 
 public class EntityModel : BaseModel
 {
+	private bool _canRegister;
+
 	public EntityModel()
 	{
-		Initialize(Vector3.zero, Vector3.zero, Vector3.one);
+		Initialize(Vector3.zero, Vector3.zero, Vector3.one, true);
 	}
 
 	public EntityModel(Vector3 position)
 	{
-		Initialize(position, Vector3.zero, Vector3.one);
+		Initialize(position, Vector3.zero, Vector3.one, true);
 	}
 
 	public EntityModel(Vector3 position, Vector3 rotation)
 	{
-		Initialize(position, rotation, Vector3.one);
+		Initialize(position, rotation, Vector3.one, true);
 	}
 
 	public EntityModel(Vector3 position, Vector3 rotation, Vector3 scale)
 	{
-		Initialize(position, rotation, scale);
+		Initialize(position, rotation, scale, true);
+	}
+
+	public EntityModel(out Action finishSetupCaller)
+	{
+		Initialize(Vector3.zero, Vector3.zero, Vector3.one, false);
+		finishSetupCaller = RegisterSelfAsEntity;
+	}
+
+	public EntityModel(Vector3 position, out Action registerAsEntityCaller)
+	{
+		Initialize(position, Vector3.zero, Vector3.one, false);
+		registerAsEntityCaller = RegisterSelfAsEntity;
+	}
+
+	public EntityModel(Vector3 position, Vector3 rotation, out Action registerAsEntityCaller)
+	{
+		Initialize(position, rotation, Vector3.one, false);
+		registerAsEntityCaller = RegisterSelfAsEntity;
+	}
+
+	public EntityModel(Vector3 position, Vector3 rotation, Vector3 scale, out Action registerAsEntityCaller)
+	{
+		Initialize(position, rotation, scale, false);
+		registerAsEntityCaller = RegisterSelfAsEntity;
 	}
 
 	public ModelTags ModelTags
@@ -66,7 +92,7 @@ public class EntityModel : BaseModel
 		ModelTransform = null;
 	}
 
-	private void Initialize(Vector3 position, Vector3 rotation, Vector3 scale)
+	private void Initialize(Vector3 position, Vector3 rotation, Vector3 scale, bool register)
 	{
 		ModelTransform = AddComponent<ModelTransform>();
 		ModelTags = AddComponent<ModelTags>();
@@ -75,6 +101,21 @@ public class EntityModel : BaseModel
 		ModelTransform.SetRot(rotation);
 		ModelTransform.SetScale(scale);
 
-		EntityTracker.Instance.Register(this);
+		_canRegister = true;
+
+		if(register)
+		{
+			RegisterSelfAsEntity();
+		}
+	}
+
+	private void RegisterSelfAsEntity()
+	{
+		if(_canRegister)
+		{
+			EntityTracker.Instance.Register(this);
+		}
+
+		_canRegister = false;
 	}
 }
