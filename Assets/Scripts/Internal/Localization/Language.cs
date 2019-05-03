@@ -1,9 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 public class Language
 {
 	public string LanguageID
+	{
+		get; private set;
+	}
+
+	public CultureInfo CultureInfo
 	{
 		get; private set;
 	}
@@ -19,6 +25,8 @@ public class Language
 	{
 		LanguageID = languageID;
 		LanguageData = languageData;
+		CultureInfo = new CultureInfo(LanguageData.CultureCode);
+
 		for(int i = 0; i < languageData.Localizations.Length; i++)
 		{
 			LanguageData.Localization localizationData = languageData.Localizations[i];

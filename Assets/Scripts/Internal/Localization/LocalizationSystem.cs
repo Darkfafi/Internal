@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using UnityEngine;
 
 public class LocalizationSystem : ILocalizationSystem, ISettings
@@ -19,6 +20,12 @@ public class LocalizationSystem : ILocalizationSystem, ISettings
 		{
 			if(_languageID == value)
 			{
+				return;
+			}
+
+			if(!_idToLanguageMap.ContainsKey(value))
+			{
+				Debug.LogError($"No Language found with ID; {value}, set LanguageID aborted!");
 				return;
 			}
 
@@ -57,9 +64,35 @@ public class LocalizationSystem : ILocalizationSystem, ISettings
 		LanguageID = _defaultLanguageID;
 	}
 
+	public void SetLanguage(CultureInfo culture)
+	{
+		Language l = GetLanguage(culture);
+		if(l != null)
+		{
+			LanguageID = l.LanguageID;
+		}
+		else
+		{
+			Debug.LogError($"No language found with culture of name {culture.EnglishName}");
+		}
+	}
+
 	public void OverrideDefaultLanguageID(string languageID)
 	{
 		_defaultLanguageID = languageID;
+	}
+
+	public void OverrideDefaultLanguageID(CultureInfo culture)
+	{
+		Language l = GetLanguage(culture);
+		if(l != null)
+		{
+			OverrideDefaultLanguageID(l.LanguageID);
+		}
+		else
+		{
+			Debug.LogError($"No language found with culture of name {culture.EnglishName}");
+		}
 	}
 
 	public string[] GetAllLanguageIDs()
@@ -73,6 +106,21 @@ public class LocalizationSystem : ILocalizationSystem, ISettings
 	}
 
 	public LocalizedString Localize(int number)
+	{
+		return LanguageLocalize(LanguageID, number);
+	}
+
+	public LocalizedString Localize(long number)
+	{
+		return LanguageLocalize(LanguageID, number);
+	}
+
+	public LocalizedString Localize(double number)
+	{
+		return LanguageLocalize(LanguageID, number);
+	}
+
+	public LocalizedString Localize(float number)
 	{
 		return LanguageLocalize(LanguageID, number);
 	}
@@ -92,9 +140,24 @@ public class LocalizationSystem : ILocalizationSystem, ISettings
 		return LanguageLocalizeFormatKeys(LanguageID, key, keys);
 	}
 
+	public LocalizedString LanguageLocalize(string languageKey, double number)
+	{
+		return new LocalizedString(languageKey, number.ToString(), number.ToString("N1", GetLanguage(languageKey).CultureInfo.NumberFormat));
+	}
+
+	public LocalizedString LanguageLocalize(string languageKey, long number)
+	{
+		return new LocalizedString(languageKey, number.ToString(), number.ToString("N0", GetLanguage(languageKey).CultureInfo.NumberFormat));
+	}
+
 	public LocalizedString LanguageLocalize(string languageKey, int number)
 	{
-		return new LocalizedString(languageKey, number.ToString(), number.ToString());
+		return LanguageLocalize(languageKey, (long)number);
+	}
+
+	public LocalizedString LanguageLocalize(string languageKey, float number)
+	{
+		return LanguageLocalize(languageKey, (double)number);
 	}
 
 	public LocalizedString LanguageLocalize(string languageKey, string key)
@@ -107,11 +170,7 @@ public class LocalizationSystem : ILocalizationSystem, ISettings
 		Language language = GetLanguage(languageKey);
 		string translation = string.Empty;
 
-		if(int.TryParse(key, out int v))
-		{
-			return LanguageLocalize(languageKey, v);
-		}
-		else
+		if(!TrySpecialLocalization(languageKey, key, formatParameters).HasValue)
 		{
 			if(language != null)
 			{
@@ -134,20 +193,8 @@ public class LocalizationSystem : ILocalizationSystem, ISettings
 		LocalizedString[] ls = new LocalizedString[keys.Length];
 		for(int i = 0; i < ls.Length; i++)
 		{
-			string s = keys[i].ToString();
-			LocalizedString localizedKey;
-			if(int.TryParse(s, out int v))
-			{
-				localizedKey = LanguageLocalize(languageKey, v);
-			}
-			else
-			{
-				localizedKey = LanguageLocalize(languageKey, s);
-			}
-
-			ls[i] = localizedKey;
+			ls[i] = LanguageLocalize(languageKey, keys[i].ToString());
 		}
-
 		return LanguageLocalizeFormat(languageKey, key, ls);
 	}
 
@@ -159,6 +206,11 @@ public class LocalizationSystem : ILocalizationSystem, ISettings
 		}
 
 		return null;
+	}
+
+	public Language GetLanguage(CultureInfo culture)
+	{
+		return GetLanguage(l => l.CultureInfo == culture);
 	}
 
 	public Language GetLanguage(Func<Language, bool> condition)
@@ -178,6 +230,31 @@ public class LocalizationSystem : ILocalizationSystem, ISettings
 	{
 		OverrideDefaultLanguageID(_originalDefaultLangaugeID);
 		SwitchToDefaultLanguage();
+	}
+
+	private LocalizedString? TrySpecialLocalization(string languageKey, string key, params LocalizedString[] formatParameters)
+	{
+		if(long.TryParse(key, out long vl))
+		{
+			return LanguageLocalize(languageKey, vl);
+		}
+
+		if(int.TryParse(key, out int vi))
+		{
+			return LanguageLocalize(languageKey, vi);
+		}
+
+		if(double.TryParse(key, out double vd))
+		{
+			return LanguageLocalize(languageKey, vd);
+		}
+
+		if(float.TryParse(key, out float vf))
+		{
+			return LanguageLocalize(languageKey, vf);
+		}
+
+		return null;
 	}
 
 	private void Initialize(string defaultLanguageID, TextAsset[] jsonFiles)
