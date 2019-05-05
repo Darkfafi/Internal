@@ -167,11 +167,15 @@ public class LocalizationSystem : ILocalizationSystem, ISettings
 
 	public LocalizedString LanguageLocalizeFormat(string languageKey, string key, params LocalizedString[] formatParameters)
 	{
-		Language language = GetLanguage(languageKey);
-		string translation = string.Empty;
-
-		if(!TrySpecialLocalization(languageKey, key, formatParameters).HasValue)
+		LocalizedString? specialLocalizedString = TrySpecialLocalization(languageKey, key, formatParameters);
+		if(specialLocalizedString.HasValue)
 		{
+			return specialLocalizedString.Value;
+		}
+		else
+		{
+			Language language = GetLanguage(languageKey);
+			string translation = string.Empty;
 			if(language != null)
 			{
 				if(!language.TryGetTranslation(key, out translation))
@@ -183,9 +187,9 @@ public class LocalizationSystem : ILocalizationSystem, ISettings
 			{
 				translation = "l- " + (string.IsNullOrEmpty(languageKey) ? "No Language Specified" : languageKey);
 			}
-		}
 
-		return new LocalizedString(languageKey, key, translation, formatParameters);
+			return new LocalizedString(languageKey, key, translation, formatParameters);
+		}
 	}
 
 	public LocalizedString LanguageLocalizeFormatKeys(string languageKey, string key, params object[] keys)
