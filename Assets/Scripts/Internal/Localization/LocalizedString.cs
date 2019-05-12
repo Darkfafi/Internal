@@ -22,7 +22,7 @@
 
 	public LocalizedString Relocalize(string languageKey)
 	{
-		if(FormatParams != null && !string.IsNullOrEmpty(TranslationKey) && !string.IsNullOrEmpty(LanguageKey))
+		if(FormatParams != null && IsLocalized())
 		{
 			LocalizedString[] l = new LocalizedString[FormatParams.Length];
 			for(int i = 0; i < l.Length; i++)
@@ -33,7 +33,7 @@
 			return SessionSettings.Request<LocalizationSystem>().LanguageLocalizeFormat(languageKey, TranslationKey, l);
 		}
 
-		return new LocalizedString(languageKey, TranslationKey, string.Empty, null);
+		return new LocalizedString(languageKey, TranslationKey, _translation, null);
 	}
 
 	public bool IsEmpty()
