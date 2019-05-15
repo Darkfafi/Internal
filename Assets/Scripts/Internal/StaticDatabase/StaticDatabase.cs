@@ -36,7 +36,7 @@ public class StaticDatabase<T> where T : struct, IStaticDatabaseData
 		List<T> allData = new List<T>();
 		foreach(var pair in _prototypeData)
 		{
-			if(predicate(pair.Value))
+			if(predicate == null || predicate(pair.Value))
 			{
 				allData.Add(pair.Value);
 			}
