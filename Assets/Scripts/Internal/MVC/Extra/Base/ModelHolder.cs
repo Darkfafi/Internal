@@ -63,6 +63,54 @@ public class ModelHolder<BM> where BM : BaseModel
 
 	// - Multiple Entities - \\
 
+	public void ForEach(Action<BM> method, Comparison<BM> sort = null)
+	{
+		ForEach<BM>(method, sort);
+	}
+
+	public void ForEach(Action<BM> method, Func<BM, bool> filterCondition, Comparison<BM> sort = null)
+	{
+		ForEach<BM>(method, filterCondition, sort);
+	}
+
+	public void ForEach<T>(Action<T> method, Comparison<T> sort = null) where T : BM
+	{
+		ForEach(method, null, sort);
+	}
+
+	public void ForEach<T>(Action<T> method, Func<T, bool> filterCondition, Comparison<T> sort = null) where T : BM
+	{
+		T[] all = GetAll(filterCondition, sort);
+		for(int i = 0, c = all.Length; i < c; i++)
+		{
+			method(all[i]);
+		}
+	}
+
+	public void ForEachReverse(Action<BM> method, Comparison<BM> sort = null)
+	{
+		ForEachReverse<BM>(method, sort);
+	}
+
+	public void ForEachReverse(Action<BM> method, Func<BM, bool> filterCondition, Comparison<BM> sort = null)
+	{
+		ForEachReverse<BM>(method, filterCondition, sort);
+	}
+
+	public void ForEachReverse<T>(Action<T> method, Comparison<T> sort = null) where T : BM
+	{
+		ForEachReverse(method, null, sort);
+	}
+
+	public void ForEachReverse<T>(Action<T> method, Func<T, bool> filterCondition, Comparison<T> sort = null) where T : BM
+	{
+		T[] all = GetAll(filterCondition, sort);
+		for(int i = all.Length - 1; i >= 0; i--)
+		{
+			method(all[i]);
+		}
+	}
+
 	public BM[] GetAll(Comparison<BM> sort = null)
 	{
 		if(sort == null)
