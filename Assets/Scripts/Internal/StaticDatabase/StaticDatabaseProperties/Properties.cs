@@ -43,7 +43,7 @@ public class Properties
 		if(defaultIsSelf)
 			return this;
 
-		return default;
+		return new Properties();
 	}
 
 	public bool TryGetProps(string key, out Properties value)
