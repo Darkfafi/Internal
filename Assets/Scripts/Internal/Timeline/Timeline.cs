@@ -9,6 +9,7 @@ public class Timeline<T> : IReadableTimeline<T> where T : class, IGame
 	public event TimelineEventHandler TimelineEventStartingEvent;
 	public event TimelineEventHandler TimelineEventStartedEvent;
 	public event TimelineEventHandler TimelineEventEndedEvent;
+	public event TimelineEventHandler TimelineEventDeactivatedEvent;
 	public event TimelineEventHandler TimelineUpwardsEvent;
 	public event TimelineEventHandler TimelineDownwardsEvent;
 
@@ -169,6 +170,10 @@ public class Timeline<T> : IReadableTimeline<T> where T : class, IGame
 		{
 			CurrentEvent.EventEndedEvent -= OnEventEndedEvent;
 			CurrentEvent.DeactivateEvent();
+			if(TimelineEventDeactivatedEvent != null)
+			{
+				TimelineEventDeactivatedEvent(CurrentEvent);
+			}
 			return true;
 		}
 
