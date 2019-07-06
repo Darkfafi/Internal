@@ -32,19 +32,22 @@ public class MethodPermitter
 			ExecuteRequestingEvent(permissionID);
 		}
 
-		if(!_permissionBlockers.ContainsKey(permissionID))
+		if(method != null)
 		{
-			method(); // No Blocker, so execute method because we have permission
-		}
-		else
-		{
-			if(_blockedActions.ContainsKey(permissionID))
+			if(!_permissionBlockers.ContainsKey(permissionID))
 			{
-				_blockedActions[permissionID] += method;
+				method(); // No Blocker, so execute method because we have permission
 			}
 			else
 			{
-				_blockedActions.Add(permissionID, method);
+				if(_blockedActions.ContainsKey(permissionID))
+				{
+					_blockedActions[permissionID] += method;
+				}
+				else
+				{
+					_blockedActions.Add(permissionID, method);
+				}
 			}
 		}
 
