@@ -21,6 +21,11 @@ public abstract class BaseMonoViewFactory<M, V> : MonoBehaviour where M : Entity
 		_factory = null;
 	}
 
+	public V CreateViewForModel(M model)
+	{
+		return _factory.CreateViewForModel(model);
+	}
+
 	protected abstract V GetViewPrefabForModel(M model);
 
 	protected virtual void OnViewConstructedForModel(M model, V view)
