@@ -7,8 +7,10 @@ public class Properties
 
 	public Properties Clone()
 	{
-		Properties newInstance = new Properties();
-		newInstance._propertiesMap = new Dictionary<string, Property>(_propertiesMap);
+		Properties newInstance = new Properties
+		{
+			_propertiesMap = new Dictionary<string, Property>(_propertiesMap)
+		};
 
 		foreach(var pair in _holdingProperties)
 		{
@@ -71,6 +73,13 @@ public class Properties
 	{
 		string[] keys = new string[_propertiesMap.Count];
 		_propertiesMap.Keys.CopyTo(keys, 0);
+		return keys;
+	}
+
+	public string[] GetAllHoldingPropertyKeys()
+	{
+		string[] keys = new string[_holdingProperties.Count];
+		_holdingProperties.Keys.CopyTo(keys, 0);
 		return keys;
 	}
 
