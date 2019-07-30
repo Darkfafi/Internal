@@ -99,6 +99,27 @@ public struct Property
 		return false;
 	}
 
+	public uint GetValue(uint defaultValue)
+	{
+		if(TryGetValue(out uint v))
+		{
+			return v;
+		}
+
+		return defaultValue;
+	}
+
+	public bool TryGetValue(out uint value)
+	{
+		if(TryGetValue(out string v))
+		{
+			return uint.TryParse(v, out value);
+		}
+
+		value = 0u;
+		return false;
+	}
+
 	public int GetValue(int defaultValue)
 	{
 		if(TryGetValue(out int v))
