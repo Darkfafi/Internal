@@ -3,12 +3,26 @@ using System.Collections.Generic;
 using System.Globalization;
 using UnityEngine;
 
-public class LocalizationSystem : ILocalizationSystem, ISettings
+public class LocalizationSystem : ILocalizationSystem
 {
-	public const string LANGUAGES_RESOURCE_LOCATION = "Languages";
-	public const string AUTO_DEFAULT_LANGUAGE_ID = "english";
+	public const string LOCALIZATION_DATABASE_RESOURCE = "localizationSettingsDatabase";
+	public const string DEFAULT_SETTINGS_ID = "settings";
 
 	public event Action<string> LanguageChangedEvent;
+
+	public static LocalizationSystem Instance
+	{
+		get
+		{
+			if(_instance == null)
+			{
+				_instance = new LocalizationSystem();
+			}
+			return _instance;
+		}
+	}
+
+	private static LocalizationSystem _instance = null;
 
 	public string LanguageID
 	{
@@ -23,9 +37,17 @@ public class LocalizationSystem : ILocalizationSystem, ISettings
 				return;
 			}
 
-			if(!_idToLanguageMap.ContainsKey(value))
+			if(_settingsToIdToLanguageMap.TryGetValue(CurrentSettingsID, out Dictionary<string, Language> languageMap))
 			{
-				Debug.LogError($"No Language found with ID; {value}, set LanguageID aborted!");
+				if(!languageMap.ContainsKey(value))
+				{
+					Debug.LogError($"No Language found with ID; {value}, set LanguageID aborted!");
+					return;
+				}
+			}
+			else
+			{
+				Debug.LogError($"{CurrentSettingsID} is not found in the {LOCALIZATION_DATABASE_RESOURCE} file");
 				return;
 			}
 
@@ -34,34 +56,60 @@ public class LocalizationSystem : ILocalizationSystem, ISettings
 		}
 	}
 
-	private string _languageID;
-
-	private List<Language> _languages = new List<Language>();
-	private List<string> _languageIds = new List<string>();
-	private Dictionary<string, Language> _idToLanguageMap = new Dictionary<string, Language>();
-	private string _originalDefaultLangaugeID;
-	private string _defaultLanguageID;
-
-	public LocalizationSystem()
+	public string CurrentSettingsID
 	{
-		TextAsset[] assets = Resources.LoadAll<TextAsset>(LANGUAGES_RESOURCE_LOCATION);
-
-		if(assets.Length == 0)
+		get
 		{
-			Debug.LogError($"No text files found at Resource Location; {LANGUAGES_RESOURCE_LOCATION}");
+			return _currentSettingsData.DataID;
 		}
-
-		Initialize(AUTO_DEFAULT_LANGUAGE_ID, assets);
 	}
 
-	public LocalizationSystem(string defaultLanguageID, TextAsset[] jsonFiles)
+	private string _languageID;
+
+	private Dictionary<string, List<Language>> _settingsTolanguages = new Dictionary<string, List<Language>>();
+	private Dictionary<string, List<string>> _settingsToLanguageIds = new Dictionary<string, List<string>>();
+	private Dictionary<string, Dictionary<string, Language>> _settingsToIdToLanguageMap = new Dictionary<string, Dictionary<string, Language>>();
+	private StaticDatabase<SettingsData> _settingsDatabase;
+	private SettingsData _currentSettingsData;
+
+	public LocalizationSystem(string settingsID = DEFAULT_SETTINGS_ID)
 	{
-		Initialize(defaultLanguageID, jsonFiles);
+		TextAsset settings = Resources.Load<TextAsset>(LOCALIZATION_DATABASE_RESOURCE);
+
+		if(settings != null)
+		{
+			_settingsDatabase = StaticDatabaseParser.ParseDatabase<SettingsData>(settings.text);
+		}
+		else
+		{
+			Dictionary<string, Properties> defaultDatabase = new Dictionary<string, Properties>();
+			defaultDatabase.Add(DEFAULT_SETTINGS_ID, new Properties());
+			_settingsDatabase = new StaticDatabase<SettingsData>(defaultDatabase, new Properties());
+		}
+
+		SetSettings(settingsID);
 	}
 
 	public void SwitchToDefaultLanguage()
 	{
-		LanguageID = _defaultLanguageID;
+		LanguageID = _currentSettingsData.DefaultLanguageID;
+	}
+
+	public void SetSettings(string settingsID)
+	{
+		if(!_settingsToIdToLanguageMap.ContainsKey(settingsID))
+		{
+			Initialize(settingsID, out string errorMessage);
+
+			if(!string.IsNullOrEmpty(errorMessage))
+			{
+				Debug.LogError(errorMessage);
+				return;
+			}
+		}
+
+		_currentSettingsData = _settingsDatabase.GetFirstData(settingsID);
+		LanguageID = _currentSettingsData.DefaultLanguageID;
 	}
 
 	public void SetLanguage(CultureInfo culture)
@@ -77,32 +125,22 @@ public class LocalizationSystem : ILocalizationSystem, ISettings
 		}
 	}
 
-	public void OverrideDefaultLanguageID(string languageID)
-	{
-		_defaultLanguageID = languageID;
-	}
-
-	public void OverrideDefaultLanguageID(CultureInfo culture)
-	{
-		Language l = GetLanguage(culture);
-		if(l != null)
-		{
-			OverrideDefaultLanguageID(l.LanguageID);
-		}
-		else
-		{
-			Debug.LogError($"No language found with culture of name {culture.EnglishName}");
-		}
-	}
-
 	public string[] GetAllLanguageIDs()
 	{
-		return _languageIds.ToArray();
+		if(_settingsToLanguageIds.TryGetValue(CurrentSettingsID, out List<string> languageIDs))
+		{
+			return languageIDs.ToArray();
+		}
+		return new string[] { };
 	}
 
 	public Language[] GetAllLanguages()
 	{
-		return _languages.ToArray();
+		if(_settingsTolanguages.TryGetValue(CurrentSettingsID, out List<Language> languages))
+		{
+			return languages.ToArray();
+		}
+		return new Language[] { };
 	}
 
 	public LocalizedString Localize(int number)
@@ -204,9 +242,12 @@ public class LocalizationSystem : ILocalizationSystem, ISettings
 
 	public Language GetLanguage(string languageID)
 	{
-		if(_idToLanguageMap.TryGetValue(languageID, out Language l))
+		if(_settingsToIdToLanguageMap.TryGetValue(CurrentSettingsID, out Dictionary<string, Language> languageMap))
 		{
-			return l;
+			if(languageMap.TryGetValue(languageID, out Language l))
+			{
+				return l;
+			}
 		}
 
 		return null;
@@ -219,21 +260,16 @@ public class LocalizationSystem : ILocalizationSystem, ISettings
 
 	public Language GetLanguage(Func<Language, bool> condition)
 	{
-		for(int i = 0, c = _languages.Count; i < c; i++)
+		Language[] languages = GetAllLanguages();
+		for(int i = 0, c = languages.Length; i < c; i++)
 		{
-			if(condition(_languages[i]))
+			if(condition(languages[i]))
 			{
-				return _languages[i];
+				return languages[i];
 			}
 		}
 
 		return null;
-	}
-
-	public void Reset()
-	{
-		OverrideDefaultLanguageID(_originalDefaultLangaugeID);
-		SwitchToDefaultLanguage();
 	}
 
 	private LocalizedString? TrySpecialLocalization(string languageKey, string key, params LocalizedString[] formatParameters)
@@ -261,17 +297,25 @@ public class LocalizationSystem : ILocalizationSystem, ISettings
 		return null;
 	}
 
-	private void Initialize(string defaultLanguageID, TextAsset[] jsonFiles)
+	private void Initialize(string settingsID, out string errorMessage)
 	{
-		_languages.Clear();
-		_languageIds.Clear();
-		_idToLanguageMap.Clear();
-		_originalDefaultLangaugeID = _defaultLanguageID = defaultLanguageID;
-		if(jsonFiles.Length == 0)
+		if(!_settingsDatabase.GetFirstData(settingsID, out SettingsData settingsData))
 		{
-			Debug.LogError($"No Translations given");
+			errorMessage = $"{settingsID} is not found in the {LOCALIZATION_DATABASE_RESOURCE} file";
 			return;
 		}
+
+		TextAsset[] jsonFiles = Resources.LoadAll<TextAsset>(settingsData.LanguagesResourceLocation);
+
+		if(jsonFiles.Length == 0)
+		{
+			errorMessage = $"No text files found at Resource Location; {settingsData.LanguagesResourceLocation}";
+			return;
+		}
+
+		_settingsTolanguages[settingsID] = new List<Language>();
+		_settingsToLanguageIds[settingsID] = new List<string>();
+		_settingsToIdToLanguageMap[settingsID] = new Dictionary<string, Language>();
 
 		for(int i = 0, c = jsonFiles.Length; i < c; i++)
 		{
@@ -291,11 +335,45 @@ public class LocalizationSystem : ILocalizationSystem, ISettings
 			}
 
 			Language l = new Language(asset.name, data);
-			_languages.Add(l);
-			_languageIds.Add(l.LanguageID);
-			_idToLanguageMap.Add(l.LanguageID, l);
+			_settingsTolanguages[settingsID].Add(l);
+			_settingsToLanguageIds[settingsID].Add(l.LanguageID);
+			_settingsToIdToLanguageMap[settingsID].Add(l.LanguageID, l);
 		}
 
+		errorMessage = string.Empty;
 		SwitchToDefaultLanguage();
+	}
+
+	private struct SettingsData : IStaticDatabaseData
+	{
+		// Properties
+		public const string PROP_DEFAULT_LANGUAGE_ID = "default_language_id";
+		public const string PROP_LANGUAGES_RESOURCE_PATH = "languages_resource_path";
+
+		// Default values
+		public const string DEFAULT_VALUE_LANGUAGES_RESOURCE_LOCATION = "Languages";
+		public const string DEFAULT_VALUE_DEFAULT_LANGUAGE_ID = "english";
+
+		public string DataID
+		{
+			get; private set;
+		}
+
+		public string DefaultLanguageID
+		{
+			get; private set;
+		}
+
+		public string LanguagesResourceLocation
+		{
+			get; private set;
+		}
+
+		public void SetProperties(string dataID, Properties properties)
+		{
+			DataID = dataID;
+			DefaultLanguageID = properties.GetProp(PROP_DEFAULT_LANGUAGE_ID).GetValue(DEFAULT_VALUE_DEFAULT_LANGUAGE_ID);
+			LanguagesResourceLocation = properties.GetProp(PROP_LANGUAGES_RESOURCE_PATH).GetValue(DEFAULT_VALUE_LANGUAGES_RESOURCE_LOCATION);
+		}
 	}
 }

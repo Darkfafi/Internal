@@ -17,7 +17,7 @@
 
 	public LocalizedString Relocalize()
 	{
-		return Relocalize(SessionSettings.Request<LocalizationSystem>().LanguageID);
+		return Relocalize(LocalizationSystem.Instance.LanguageID);
 	}
 
 	public LocalizedString Relocalize(string languageKey)
@@ -30,7 +30,7 @@
 				FormatParams[i] = FormatParams[i].Relocalize(languageKey);
 			}
 
-			return SessionSettings.Request<LocalizationSystem>().LanguageLocalizeFormat(languageKey, TranslationKey, l);
+			return LocalizationSystem.Instance.LanguageLocalizeFormat(languageKey, TranslationKey, l);
 		}
 
 		return new LocalizedString(languageKey, TranslationKey, _translation, null);

@@ -22,9 +22,9 @@
 			{
 				localizedItems[i] = LocalizeDatabaseFormatSet(GetValueOfSetString(contentItems[i].Trim(), baseProperties), baseProperties);
 			}
-			return LocalizationUtils.GetSystem().LocalizeFormat(GetValueOfSetString(key, baseProperties), localizedItems);
+			return LocalizationSystem.Instance.LocalizeFormat(GetValueOfSetString(key, baseProperties), localizedItems);
 		}
-		return LocalizationUtils.GetSystem().Localize(GetValueOfSetString(key, baseProperties));
+		return LocalizationSystem.Instance.Localize(GetValueOfSetString(key, baseProperties));
 	}
 
 	/// <summary>
