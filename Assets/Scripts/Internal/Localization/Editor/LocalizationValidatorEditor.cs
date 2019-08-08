@@ -20,9 +20,10 @@ public class LocalizationValidatorEditor
 
 			foreach(var languageValidation in settingValidation.LanguageValidations)
 			{
+				string colorArrow = languageValidation.IsDefault ? "blue" : "black";
 				if(languageValidation.HasComplication)
 				{
-					Debug.LogError($"▶{languageValidation.LanguageID}: <color=red>Has Complications!</color>");
+					Debug.LogError($"<color={colorArrow}>▶</color>{languageValidation.LanguageID}: <color=red>Has Complications!</color>");
 
 					if(languageValidation.KeysNotLocalized.Length > 0)
 						PrintComplications("red", "black", "Keys Not Localized", languageValidation.KeysNotLocalized);
@@ -38,7 +39,7 @@ public class LocalizationValidatorEditor
 				}
 				else
 				{
-					Debug.Log($"▶{languageValidation.LanguageID}: <color=green>Valid!</color>");
+					Debug.Log($"<color={colorArrow}>▶</color>{languageValidation.LanguageID}: <color=green>Valid!</color>");
 				}
 			}
 		}
