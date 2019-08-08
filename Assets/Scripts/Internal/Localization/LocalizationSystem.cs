@@ -10,20 +10,6 @@ public class LocalizationSystem : ILocalizationSystem
 
 	public event Action<string> LanguageChangedEvent;
 
-	public static LocalizationSystem Instance
-	{
-		get
-		{
-			if(_instance == null)
-			{
-				_instance = new LocalizationSystem();
-			}
-			return _instance;
-		}
-	}
-
-	private static LocalizationSystem _instance = null;
-
 	public string LanguageID
 	{
 		get
@@ -64,6 +50,14 @@ public class LocalizationSystem : ILocalizationSystem
 		}
 	}
 
+	public string DefaultLanguageID
+	{
+		get
+		{
+			return _currentSettingsData.DefaultLanguageID;
+		}
+	}
+
 	private string _languageID;
 
 	private Dictionary<string, List<Language>> _settingsTolanguages = new Dictionary<string, List<Language>>();
@@ -72,22 +66,31 @@ public class LocalizationSystem : ILocalizationSystem
 	private StaticDatabase<SettingsData> _settingsDatabase;
 	private SettingsData _currentSettingsData;
 
-	public LocalizationSystem(string settingsID = DEFAULT_SETTINGS_ID)
+	public static StaticDatabase<SettingsData> ParseSettingsDatabase(string localizationDatabaseResourcePath = LOCALIZATION_DATABASE_RESOURCE)
 	{
-		TextAsset settings = Resources.Load<TextAsset>(LOCALIZATION_DATABASE_RESOURCE);
-
+		TextAsset settings = Resources.Load<TextAsset>(localizationDatabaseResourcePath);
 		if(settings != null)
 		{
-			_settingsDatabase = StaticDatabaseParser.ParseDatabase<SettingsData>(settings.text);
+			return StaticDatabaseParser.ParseDatabase<SettingsData>(settings.text);
 		}
 		else
 		{
 			Dictionary<string, Properties> defaultDatabase = new Dictionary<string, Properties>();
 			defaultDatabase.Add(DEFAULT_SETTINGS_ID, new Properties());
-			_settingsDatabase = new StaticDatabase<SettingsData>(defaultDatabase, new Properties());
+			return new StaticDatabase<SettingsData>(defaultDatabase, new Properties());
 		}
+	}
 
+	public LocalizationSystem(string settingsID = DEFAULT_SETTINGS_ID)
+	{
+		_settingsDatabase = ParseSettingsDatabase();
 		SetSettings(settingsID);
+	}
+
+	public LocalizationSystem(string settingsID, out string errorMessage)
+	{
+		_settingsDatabase = ParseSettingsDatabase();
+		SetSettings(settingsID, out errorMessage);
 	}
 
 	public void SwitchToDefaultLanguage()
@@ -97,17 +100,24 @@ public class LocalizationSystem : ILocalizationSystem
 
 	public void SetSettings(string settingsID)
 	{
+		SetSettings(settingsID, out string errorMessage);
+		if(!string.IsNullOrEmpty(errorMessage))
+		{
+			Debug.LogError(errorMessage);
+		}
+	}
+
+	public void SetSettings(string settingsID, out string errorMessage)
+	{
 		if(!_settingsToIdToLanguageMap.ContainsKey(settingsID))
 		{
-			Initialize(settingsID, out string errorMessage);
-
+			Initialize(settingsID, out errorMessage);
 			if(!string.IsNullOrEmpty(errorMessage))
 			{
-				Debug.LogError(errorMessage);
 				return;
 			}
 		}
-
+		errorMessage = string.Empty;
 		_currentSettingsData = _settingsDatabase.GetFirstData(settingsID);
 		LanguageID = _currentSettingsData.DefaultLanguageID;
 	}
@@ -249,7 +259,6 @@ public class LocalizationSystem : ILocalizationSystem
 				return l;
 			}
 		}
-
 		return null;
 	}
 
@@ -324,27 +333,35 @@ public class LocalizationSystem : ILocalizationSystem
 
 			if(string.IsNullOrEmpty(data.CultureCode))
 			{
-				Debug.LogError($"No culture found in langauge asset with id {asset.name}");
-				continue;
+				errorMessage = $"No culture found in langauge asset with id {asset.name}";
+				return;
 			}
 
 			if(data.Localizations.Length == 0)
 			{
-				Debug.LogError($"No localizations found in langauge asset with id {asset.name}");
-				continue;
+				errorMessage = $"No localizations found in langauge asset with id {asset.name}";
+				return;
 			}
 
-			Language l = new Language(asset.name, data);
-			_settingsTolanguages[settingsID].Add(l);
-			_settingsToLanguageIds[settingsID].Add(l.LanguageID);
-			_settingsToIdToLanguageMap[settingsID].Add(l.LanguageID, l);
+			try
+			{
+				Language l = new Language(asset.name, data);
+				_settingsTolanguages[settingsID].Add(l);
+				_settingsToLanguageIds[settingsID].Add(l.LanguageID);
+				_settingsToIdToLanguageMap[settingsID].Add(l.LanguageID, l);
+			}
+			catch(Exception ex)
+			{
+				errorMessage = $"Language {asset.name} could not be created: {ex.Message}";
+				return;
+			}
 		}
 
 		errorMessage = string.Empty;
 		SwitchToDefaultLanguage();
 	}
 
-	private struct SettingsData : IStaticDatabaseData
+	public struct SettingsData : IStaticDatabaseData
 	{
 		// Properties
 		public const string PROP_DEFAULT_LANGUAGE_ID = "default_language_id";

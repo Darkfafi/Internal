@@ -31,6 +31,11 @@ public class StaticDatabase<T> where T : struct, IStaticDatabaseData
 		}
 	}
 
+	public T[] GetAllData()
+	{
+		return GetData(null);
+	}
+
 	public T[] GetData(Predicate<T> predicate)
 	{
 		List<T> allData = new List<T>();

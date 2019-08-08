@@ -39,7 +39,7 @@ public class LocalizedTextDisplay : MonoBehaviour
 		{
 			if(_localizationSystem == null && !_deInit)
 			{
-				_localizationSystem = LocalizationSystem.Instance;
+				_localizationSystem = Localization.Instance;
 			}
 
 			return _localizationSystem;
