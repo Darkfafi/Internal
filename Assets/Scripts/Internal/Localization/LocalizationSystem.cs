@@ -158,6 +158,11 @@ public class LocalizationSystem : ILocalizationSystem
 		return LanguageLocalize(LanguageID, number);
 	}
 
+	public LocalizedString Localize(ulong number)
+	{
+		return LanguageLocalize(LanguageID, number);
+	}
+
 	public LocalizedString Localize(long number)
 	{
 		return LanguageLocalize(LanguageID, number);
@@ -191,6 +196,11 @@ public class LocalizationSystem : ILocalizationSystem
 	public LocalizedString LanguageLocalize(string languageKey, double number)
 	{
 		return new LocalizedString(languageKey, number.ToString(), number.ToString("N1", GetLanguage(languageKey).CultureInfo.NumberFormat));
+	}
+
+	public LocalizedString LanguageLocalize(string languageKey, ulong number)
+	{
+		return new LocalizedString(languageKey, number.ToString(), number.ToString("N0", GetLanguage(languageKey).CultureInfo.NumberFormat));
 	}
 
 	public LocalizedString LanguageLocalize(string languageKey, long number)

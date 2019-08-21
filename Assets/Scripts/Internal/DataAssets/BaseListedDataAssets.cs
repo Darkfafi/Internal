@@ -28,6 +28,14 @@ namespace DataAssets
 			return true;
 		}
 
+		public Data[] AssetsData
+		{
+			get
+			{
+				return _assetsData;
+			}
+		}
+
 		public override bool TryGetAsset(string assetID, out Data data)
 		{
 			return _assetsCached.TryGetValue(assetID, out data);

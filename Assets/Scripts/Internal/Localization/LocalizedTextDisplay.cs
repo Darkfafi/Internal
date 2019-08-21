@@ -58,7 +58,12 @@ public class LocalizedTextDisplay : MonoBehaviour
 		}
 	}
 
-	protected void Awake()
+	public string GetLocalizedStringTranslation()
+	{
+		return GetLocalizedStringTranslation(LocalizedString);
+	}
+
+	protected virtual void Awake()
 	{
 		if(LocalizedString.IsEmpty())
 		{
@@ -83,6 +88,11 @@ public class LocalizedTextDisplay : MonoBehaviour
 		_localizationSystem = null;
 	}
 
+	protected virtual string GetLocalizedStringTranslation(LocalizedString localizedString)
+	{
+		return localizedString.GetTranslation();
+	}
+
 	private void OnLanguageChangedEvent(string languageID)
 	{
 		UpdateText(languageID);
@@ -95,7 +105,6 @@ public class LocalizedTextDisplay : MonoBehaviour
 		{
 			LocalizedString = LocalizedString.Relocalize(languageID);
 		}
-
-		_textComponentToAffect.text = LocalizedString.GetTranslation();
+		_textComponentToAffect.text = GetLocalizedStringTranslation(LocalizedString);
 	}
 }
