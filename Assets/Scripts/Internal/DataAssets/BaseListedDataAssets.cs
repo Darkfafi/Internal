@@ -6,7 +6,7 @@ namespace DataAssets
 	public abstract class BaseListedDataAssets<SELF, Data> : BaseDataAssets<SELF, Data> where Data : IListedAssetData where SELF : Object, IAssets<Data>
 	{
 		[SerializeField]
-		private Data[] _assetsData = null;
+		protected List<Data> _assetsData = null;
 
 		private Dictionary<string, Data> _assetsCached;
 
@@ -14,7 +14,7 @@ namespace DataAssets
 		{
 			_assetsCached = new Dictionary<string, Data>();
 			message = string.Empty;
-			for(int i = 0; i < _assetsData.Length; i++)
+			for(int i = 0; i < _assetsData.Count; i++)
 			{
 				Data data = _assetsData[i];
 				if(_assetsCached.ContainsKey(data.AssetID))
@@ -32,7 +32,7 @@ namespace DataAssets
 		{
 			get
 			{
-				return _assetsData;
+				return _assetsData.ToArray();
 			}
 		}
 
