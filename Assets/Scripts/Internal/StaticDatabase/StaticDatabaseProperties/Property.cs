@@ -507,9 +507,9 @@ public struct Property
 
 	private bool TryGetSplitInputValue<T>(TryParseValueHandler<T> tryParseMethod, string input, char splitValue, out T[] value)
 	{
-		input = input.Trim();
 		if(!string.IsNullOrEmpty(input))
 		{
+			input = input.Trim();
 			if(input[input.Length - 1].Equals(splitValue))
 			{
 				input = input.Remove(input.Length - 1, 1);

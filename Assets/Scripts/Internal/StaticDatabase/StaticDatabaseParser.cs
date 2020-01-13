@@ -6,6 +6,11 @@ public static class StaticDatabaseParser
 {
 	public const string DATABASE_DATA_ID = "DATABASE";
 
+	public static StaticDatabase<T> ParseDatabaseAtResource<T>(string resourcePath) where T : struct, IStaticDatabaseData
+	{
+		 return ParseDatabase<T>(Resources.Load<TextAsset>(resourcePath).text);
+	}
+
 	public static StaticDatabase<T> ParseDatabase<T>(string databaseTextFile) where T : struct, IStaticDatabaseData
 	{
 		// Format: dataID->obj.obj.obj = value;
