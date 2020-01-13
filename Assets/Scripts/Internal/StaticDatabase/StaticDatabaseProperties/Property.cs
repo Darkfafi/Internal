@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 public struct Property
 {
@@ -26,13 +27,45 @@ public struct Property
 		return returnValue;
 	}
 
+	public KeyValuePair<string, string>[] GetValue(KeyValuePair<string, string>[] defaultValue)
+	{
+		if(TryGetValue(out KeyValuePair<string, string>[] v))
+		{
+			return v;
+		}
+
+		return defaultValue;
+	}
+
+	public bool TryGetValue(out KeyValuePair<string, string>[] value)
+	{
+		if(TryGetValue(out string plainText))
+		{
+			plainText = plainText.Replace(';', ',');
+			if(TryGetSplitInputValue(plainText, ',', out string[] v))
+			{
+				if(v.Length % 2 == 0)
+				{
+					value = new KeyValuePair<string, string>[v.Length / 2];
+					for(int i = 0; i < value.Length; i++)
+					{
+						int index = i * 2;
+						value[i] = new KeyValuePair<string, string>(v[index], v[index + 1]);
+					}
+					return true;
+				}
+			}
+		}
+		value = new KeyValuePair<string, string>[] { };
+		return false;
+	}
+
 	public KeyValuePair<string, string> GetValue(KeyValuePair<string, string> defaultValue)
 	{
 		if(TryGetValue(out KeyValuePair<string, string> v))
 		{
 			return v;
 		}
-
 		return defaultValue;
 	}
 
@@ -63,19 +96,7 @@ public struct Property
 
 	public bool TryGetValue(out string[] value)
 	{
-		if(TryGetValue(out string v))
-		{
-			string[] arrayEntries = v.Trim().Split(',');
-			value = new string[arrayEntries.Length];
-			for(int i = 0, c = value.Length; i < c; i++)
-			{
-				value[i] = arrayEntries[i].Trim();
-			}
-			return true;
-		}
-
-		value = new string[] { };
-		return false;
+		return TryGetSplitInputValue(Value, ',', out value);
 	}
 
 	public float GetValue(float defaultValue)
@@ -218,5 +239,28 @@ public struct Property
 	{
 		value = Value;
 		return !string.IsNullOrEmpty(value);
+	}
+
+	private bool TryGetSplitInputValue(string input, char splitValue, out string[] value)
+	{
+		input = input.Trim();
+		if(!string.IsNullOrEmpty(input))
+		{
+			if(input[input.Length - 1].Equals(splitValue))
+			{
+				input = input.Remove(input.Length - 1, 1);
+			}
+
+			string[] arrayEntries = input.Split(splitValue);
+			value = new string[arrayEntries.Length];
+			for(int i = 0, c = value.Length; i < c; i++)
+			{
+				value[i] = arrayEntries[i].Trim();
+			}
+			return true;
+		}
+
+		value = new string[] { };
+		return false;
 	}
 }
