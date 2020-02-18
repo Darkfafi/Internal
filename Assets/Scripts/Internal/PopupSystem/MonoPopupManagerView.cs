@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using MVC;
+using UnityEngine;
 using UnityEngine.UI;
 
 public class MonoPopupManagerView : MonoBaseView

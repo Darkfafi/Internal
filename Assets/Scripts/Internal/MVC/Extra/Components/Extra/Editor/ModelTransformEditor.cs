@@ -1,14 +1,17 @@
 ﻿using UnityEditor;
 
-[ModelComponentEditor(typeof(ModelTransform))]
-public class ModelTransformEditor : ModelComponentEditor
+namespace MVC
 {
-	public override void OnGUI(BaseModelComponent transformComponent)
+	[ModelComponentEditor(typeof(ModelTransform))]
+	public class ModelTransformEditor : ModelComponentEditor
 	{
-		ModelTransform t = transformComponent as ModelTransform;
+		public override void OnGUI(BaseModelComponent transformComponent)
+		{
+			ModelTransform t = transformComponent as ModelTransform;
 
-		t.SetPos(EditorGUILayout.Vector3Field("Position", t.Position));
-		t.SetRot(EditorGUILayout.Vector3Field("Rotation", t.Rotation));
-		t.SetScale(EditorGUILayout.Vector3Field("Scale", t.Scale));
+			t.SetPos(EditorGUILayout.Vector3Field("Position", t.Position));
+			t.SetRot(EditorGUILayout.Vector3Field("Rotation", t.Rotation));
+			t.SetScale(EditorGUILayout.Vector3Field("Scale", t.Scale));
+		}
 	}
 }

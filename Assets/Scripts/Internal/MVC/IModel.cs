@@ -1,15 +1,18 @@
-﻿public interface IModel
+﻿namespace MVC
 {
-	IAbstractController LinkingController
+	public interface IModel
 	{
-		get;
-	}
+		IAbstractController LinkingController
+		{
+			get;
+		}
 
-	MethodPermitter MethodPermitter
-	{
-		get;
-	}
+		MethodPermitter MethodPermitter
+		{
+			get;
+		}
 
-	void SetupModel(IAbstractController controller);
-	void Destroy();
+		void SetupModel(IAbstractController controller);
+		void Destroy();
+	}
 }

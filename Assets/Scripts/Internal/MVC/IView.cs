@@ -1,11 +1,14 @@
-﻿public interface IView
+﻿namespace MVC
 {
-	IMethodPermitter LinkingController
+	public interface IView
 	{
-		get;
+		IMethodPermitter LinkingController
+		{
+			get;
+		}
+		void PreSetupView(IMethodPermitter controller);
+		void SetupView();
+		void DestroyView();
+		void PreDestroyView();
 	}
-	void PreSetupView(IMethodPermitter controller);
-	void SetupView();
-	void DestroyView();
-	void PreDestroyView();
 }

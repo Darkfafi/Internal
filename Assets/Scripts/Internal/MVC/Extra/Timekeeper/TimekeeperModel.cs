@@ -1,69 +1,72 @@
 ﻿using System;
 
-public class TimekeeperModel : BaseModel
+namespace MVC
 {
-	public event Action<bool> TimePauseStateChangedEvent;
-	public delegate void FrameTickHandler(float deltaTime, float timeScale);
-
-	public float TimeScale = 1f;
-
-	public bool Paused
+	public class TimekeeperModel : BaseModel
 	{
-		get
+		public event Action<bool> TimePauseStateChangedEvent;
+		public delegate void FrameTickHandler(float deltaTime, float timeScale);
+
+		public float TimeScale = 1f;
+
+		public bool Paused
 		{
-			return _isPaused;
-		}
-		set
-		{
-			if(_isPaused != value)
+			get
 			{
-				_isPaused = value;
-				if(TimePauseStateChangedEvent != null)
+				return _isPaused;
+			}
+			set
+			{
+				if (_isPaused != value)
 				{
-					TimePauseStateChangedEvent(_isPaused);
+					_isPaused = value;
+					if (TimePauseStateChangedEvent != null)
+					{
+						TimePauseStateChangedEvent(_isPaused);
+					}
 				}
 			}
 		}
-	}
 
-	public double SecondsPassedSessionUnscaled
-	{
-		get; private set;
-	}
-	public double SecondsPassedSessionScaled
-	{
-		get; private set;
-	}
-
-	private FrameTickHandler _frameTickAction;
-	private bool _isPaused = false;
-
-	public void FrameTick(float deltaTime)
-	{
-		if(!Paused)
+		public double SecondsPassedSessionUnscaled
 		{
-			SecondsPassedSessionUnscaled += deltaTime;
-			SecondsPassedSessionScaled += deltaTime * TimeScale;
+			get; private set;
+		}
+		public double SecondsPassedSessionScaled
+		{
+			get; private set;
+		}
 
-			if(_frameTickAction != null)
+		private FrameTickHandler _frameTickAction;
+		private bool _isPaused = false;
+
+		public void FrameTick(float deltaTime)
+		{
+			if (!Paused)
 			{
-				_frameTickAction(deltaTime, TimeScale);
+				SecondsPassedSessionUnscaled += deltaTime;
+				SecondsPassedSessionScaled += deltaTime * TimeScale;
+
+				if (_frameTickAction != null)
+				{
+					_frameTickAction(deltaTime, TimeScale);
+				}
 			}
 		}
-	}
 
-	public void ListenToFrameTick(FrameTickHandler callback)
-	{
-		_frameTickAction += callback;
-	}
+		public void ListenToFrameTick(FrameTickHandler callback)
+		{
+			_frameTickAction += callback;
+		}
 
-	public void UnlistenFromFrameTick(FrameTickHandler callback)
-	{
-		_frameTickAction -= callback;
-	}
+		public void UnlistenFromFrameTick(FrameTickHandler callback)
+		{
+			_frameTickAction -= callback;
+		}
 
-	protected override void OnModelDestroy()
-	{
-		_frameTickAction = null;
+		protected override void OnModelDestroy()
+		{
+			_frameTickAction = null;
+		}
 	}
 }

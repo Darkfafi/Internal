@@ -1,46 +1,49 @@
 ﻿using UnityEngine;
 
-public class TimekeeperView : MonoBaseView
+namespace MVC
 {
-	private TimekeeperModel _model;
-	private bool? onApplicationPauseState = null;
-
-	protected override void OnViewReady()
+	public class TimekeeperView : MonoBaseView
 	{
-		_model = MVCUtil.GetModel<TimekeeperModel>(this);
-	}
+		private TimekeeperModel _model;
+		private bool? onApplicationPauseState = null;
 
-	protected void Update()
-	{
-		if(_model != null)
+		protected override void OnViewReady()
 		{
-			_model.FrameTick(Time.deltaTime);
+			_model = MVCUtil.GetModel<TimekeeperModel>(this);
 		}
-	}
 
-	protected override void OnViewDestroy()
-	{
-		_model = null;
-	}
-
-	private void OnApplicationPause(bool pause)
-	{
-		OnApplicationFocus(!pause);
-	}
-
-	private void OnApplicationFocus(bool focussed)
-	{
-		if(_model != null)
+		protected void Update()
 		{
-			if(focussed && onApplicationPauseState.HasValue)
+			if (_model != null)
 			{
-				_model.Paused = onApplicationPauseState.Value;
-				onApplicationPauseState = null;
+				_model.FrameTick(Time.deltaTime);
 			}
-			else if(!focussed && !onApplicationPauseState.HasValue)
+		}
+
+		protected override void OnViewDestroy()
+		{
+			_model = null;
+		}
+
+		private void OnApplicationPause(bool pause)
+		{
+			OnApplicationFocus(!pause);
+		}
+
+		private void OnApplicationFocus(bool focussed)
+		{
+			if (_model != null)
 			{
-				onApplicationPauseState = _model.Paused;
-				_model.Paused = true;
+				if (focussed && onApplicationPauseState.HasValue)
+				{
+					_model.Paused = onApplicationPauseState.Value;
+					onApplicationPauseState = null;
+				}
+				else if (!focussed && !onApplicationPauseState.HasValue)
+				{
+					onApplicationPauseState = _model.Paused;
+					_model.Paused = true;
+				}
 			}
 		}
 	}

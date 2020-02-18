@@ -1,113 +1,117 @@
-﻿public class EntityTracker : ModelHolder<EntityModel>
+﻿
+namespace MVC.ECS
 {
-	public delegate void EntityTagHandler(EntityModel entity, string tag);
-	public delegate void EntityComponentHandler(EntityModel entity, BaseModelComponent component);
-	public delegate void EntityComponentEnabledStateHandler(EntityModel entity, BaseModelComponent component, bool enabledState);
-	public event EntityTagHandler EntityAddedTagEvent;
-	public event EntityTagHandler EntityRemovedTagEvent;
-	public event EntityComponentHandler EntityAddedComponentEvent;
-	public event EntityComponentHandler EntityRemovedComponentEvent;
-	public event EntityComponentEnabledStateHandler EntityChangedEnabledStateOfComponentEvent;
-
-	public static EntityTracker Instance
+	public class EntityTracker : ModelHolder<EntityModel>
 	{
-		get
+		public delegate void EntityTagHandler(EntityModel entity, string tag);
+		public delegate void EntityComponentHandler(EntityModel entity, BaseModelComponent component);
+		public delegate void EntityComponentEnabledStateHandler(EntityModel entity, BaseModelComponent component, bool enabledState);
+		public event EntityTagHandler EntityAddedTagEvent;
+		public event EntityTagHandler EntityRemovedTagEvent;
+		public event EntityComponentHandler EntityAddedComponentEvent;
+		public event EntityComponentHandler EntityRemovedComponentEvent;
+		public event EntityComponentEnabledStateHandler EntityChangedEnabledStateOfComponentEvent;
+
+		public static EntityTracker Instance
 		{
-			if(_instance == null)
+			get
 			{
-				_instance = new EntityTracker();
-			}
+				if (_instance == null)
+				{
+					_instance = new EntityTracker();
+				}
 
-			return _instance;
-		}
-	}
-
-	private static EntityTracker _instance;
-
-	public void Register(EntityModel model)
-	{
-		if(Track(model))
-		{
-			if(model.IsDestroyed)
-			{
-				Unregister(model);
-			}
-			else
-			{
-				model.DestroyEvent += OnDestroyEvent;
-				model.ModelTags.TagAddedEvent += OnTagAddedEvent;
-				model.ModelTags.TagRemovedEvent += OnTagRemovedEvent;
-				model.AddedComponentToModelEvent += OnComponentAddedEvent;
-				model.RemovedComponentFromModelEvent += OnComponentRemovedEvent;
-				model.ChangedComponentEnabledStateFromModelEvent += OnChangedComponentEnabledStateFromModelEvent;
+				return _instance;
 			}
 		}
-	}
 
-	public void Unregister(EntityModel model)
-	{
-		if(Untrack(model))
+		private static EntityTracker _instance;
+
+		public void Register(EntityModel model)
 		{
-			model.DestroyEvent -= OnDestroyEvent;
-			model.ModelTags.TagAddedEvent -= OnTagAddedEvent;
-			model.ModelTags.TagRemovedEvent -= OnTagRemovedEvent;
-			model.AddedComponentToModelEvent -= OnComponentAddedEvent;
-			model.RemovedComponentFromModelEvent -= OnComponentRemovedEvent;
-			model.ChangedComponentEnabledStateFromModelEvent -= OnChangedComponentEnabledStateFromModelEvent;
+			if (Track(model))
+			{
+				if (model.IsDestroyed)
+				{
+					Unregister(model);
+				}
+				else
+				{
+					model.DestroyEvent += OnDestroyEvent;
+					model.ModelTags.TagAddedEvent += OnTagAddedEvent;
+					model.ModelTags.TagRemovedEvent += OnTagRemovedEvent;
+					model.AddedComponentToModelEvent += OnComponentAddedEvent;
+					model.RemovedComponentFromModelEvent += OnComponentRemovedEvent;
+					model.ChangedComponentEnabledStateFromModelEvent += OnChangedComponentEnabledStateFromModelEvent;
+				}
+			}
 		}
-	}
 
-	public override void Clean()
-	{
-		EntityModel[] models = GetAll();
-		for(int i = 0; i < models.Length; i++)
+		public void Unregister(EntityModel model)
 		{
-			models[i].Destroy();
+			if (Untrack(model))
+			{
+				model.DestroyEvent -= OnDestroyEvent;
+				model.ModelTags.TagAddedEvent -= OnTagAddedEvent;
+				model.ModelTags.TagRemovedEvent -= OnTagRemovedEvent;
+				model.AddedComponentToModelEvent -= OnComponentAddedEvent;
+				model.RemovedComponentFromModelEvent -= OnComponentRemovedEvent;
+				model.ChangedComponentEnabledStateFromModelEvent -= OnChangedComponentEnabledStateFromModelEvent;
+			}
 		}
-	}
 
-	private void OnDestroyEvent(BaseModel destroyedEntity)
-	{
-		Unregister((EntityModel)destroyedEntity);
-	}
-
-	private void OnTagAddedEvent(BaseModel entity, string tag)
-	{
-		if(EntityAddedTagEvent != null)
+		public override void Clean()
 		{
-			EntityAddedTagEvent((EntityModel)entity, tag);
+			EntityModel[] models = GetAll();
+			for (int i = 0; i < models.Length; i++)
+			{
+				models[i].Destroy();
+			}
 		}
-	}
 
-	private void OnTagRemovedEvent(BaseModel entity, string tag)
-	{
-		if(EntityRemovedTagEvent != null)
+		private void OnDestroyEvent(BaseModel destroyedEntity)
 		{
-			EntityRemovedTagEvent((EntityModel)entity, tag);
+			Unregister((EntityModel)destroyedEntity);
 		}
-	}
 
-	private void OnComponentAddedEvent(BaseModel entity, BaseModelComponent component)
-	{
-		if(EntityAddedComponentEvent != null)
+		private void OnTagAddedEvent(BaseModel entity, string tag)
 		{
-			EntityAddedComponentEvent((EntityModel)entity, component);
+			if (EntityAddedTagEvent != null)
+			{
+				EntityAddedTagEvent((EntityModel)entity, tag);
+			}
 		}
-	}
 
-	private void OnComponentRemovedEvent(BaseModel entity, BaseModelComponent component)
-	{
-		if(EntityRemovedComponentEvent != null)
+		private void OnTagRemovedEvent(BaseModel entity, string tag)
 		{
-			EntityRemovedComponentEvent((EntityModel)entity, component);
+			if (EntityRemovedTagEvent != null)
+			{
+				EntityRemovedTagEvent((EntityModel)entity, tag);
+			}
 		}
-	}
 
-	private void OnChangedComponentEnabledStateFromModelEvent(BaseModel entity, BaseModelComponent component, bool enabledState)
-	{
-		if(EntityChangedEnabledStateOfComponentEvent != null)
+		private void OnComponentAddedEvent(BaseModel entity, BaseModelComponent component)
 		{
-			EntityChangedEnabledStateOfComponentEvent((EntityModel)entity, component, enabledState);
+			if (EntityAddedComponentEvent != null)
+			{
+				EntityAddedComponentEvent((EntityModel)entity, component);
+			}
+		}
+
+		private void OnComponentRemovedEvent(BaseModel entity, BaseModelComponent component)
+		{
+			if (EntityRemovedComponentEvent != null)
+			{
+				EntityRemovedComponentEvent((EntityModel)entity, component);
+			}
+		}
+
+		private void OnChangedComponentEnabledStateFromModelEvent(BaseModel entity, BaseModelComponent component, bool enabledState)
+		{
+			if (EntityChangedEnabledStateOfComponentEvent != null)
+			{
+				EntityChangedEnabledStateOfComponentEvent((EntityModel)entity, component, enabledState);
+			}
 		}
 	}
 }

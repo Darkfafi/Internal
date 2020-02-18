@@ -1,151 +1,154 @@
 ﻿using System;
 using UnityEngine;
 
-/// <summary>
-/// The design is to have the View contain all the Unity / visual specific code and use the Model data to set its visual state.
-/// It is to only read from the Model, not to alter its data.
-/// </summary>
-public abstract class MonoBaseView : MonoBehaviour, IView
+namespace MVC
 {
-	public Action<MonoBaseView> ViewDestroyedEvent;
-
-	private BaseView _baseView = new BaseView();
-	private bool _selfMonoBehaviourDestroy = false;
-
-	public IMethodPermitter LinkingController
+	/// <summary>
+	/// The design is to have the View contain all the Unity / visual specific code and use the Model data to set its visual state.
+	/// It is to only read from the Model, not to alter its data.
+	/// </summary>
+	public abstract class MonoBaseView : MonoBehaviour, IView
 	{
-		get
+		public Action<MonoBaseView> ViewDestroyedEvent;
+
+		private BaseView _baseView = new BaseView();
+		private bool _selfMonoBehaviourDestroy = false;
+
+		public IMethodPermitter LinkingController
 		{
-			if(_baseView == null)
-				return null;
+			get
+			{
+				if (_baseView == null)
+					return null;
 
-			return _baseView.LinkingController;
-		}
-	}
-
-	public virtual void PreDestroyView()
-	{
-		if(_baseView == null)
-			return;
-
-		_baseView.PreDestroyView();
-	}
-
-	public virtual void DestroyView()
-	{
-		if(LinkingController == null)
-		{
-			return;
+				return _baseView.LinkingController;
+			}
 		}
 
-		_baseView.DestroyView();
-
-		if(ViewDestroyedEvent != null)
+		public virtual void PreDestroyView()
 		{
-			ViewDestroyedEvent(this);
-		}
-		
-		OnViewDestroy();
-		ViewDestruction();
-		_baseView = null;
-	}
+			if (_baseView == null)
+				return;
 
-	public virtual void PreSetupView(IMethodPermitter controller)
-	{
-		if(LinkingController != null)
-			return;
-
-		_baseView.PreSetupView(controller);
-		OnPreViewReady();
-	}
-
-	public virtual void SetupView()
-	{
-		_baseView.SetupView();
-		OnViewReady();
-	}
-
-	protected virtual void ViewDestruction()
-	{
-		if(gameObject != null)
-		{
-			_selfMonoBehaviourDestroy = true;
-			Destroy(gameObject);
-		}
-	}
-
-	protected void OnDestroy()
-	{
-		if(!_selfMonoBehaviourDestroy)
-		{
-			PreUnityViewDestruction();
-			DestroyView();
-			PostUnityViewDestruction();
-		}
-	}
-
-	protected virtual void OnPreViewReady() { }
-	protected virtual void OnViewReady() { }
-	protected virtual void OnViewDestroy() { }
-	protected virtual void PreUnityViewDestruction() { }
-	protected virtual void PostUnityViewDestruction() { }
-}
-
-/// <summary>
-/// The design is to have the View contain all the Unity / visual specific code and use the Model data to set its visual state.
-/// </summary>
-public class BaseView : IView
-{
-	public Action<BaseView> ViewDestroyedEvent;
-
-	public IMethodPermitter LinkingController
-	{
-		get; private set;
-	}
-
-	public virtual void PreDestroyView()
-	{
-
-	}
-
-	public virtual void PreSetupView(IMethodPermitter controller)
-	{
-		if(LinkingController != null)
-			return;
-
-		LinkingController = controller;
-		OnPreViewReady();
-	}
-
-	public virtual void DestroyView()
-	{
-		if(LinkingController == null)
-		{
-			return;
+			_baseView.PreDestroyView();
 		}
 
-		OnViewDestroy();
-
-		if(ViewDestroyedEvent != null)
+		public virtual void DestroyView()
 		{
-			ViewDestroyedEvent(this);
+			if (LinkingController == null)
+			{
+				return;
+			}
+
+			_baseView.DestroyView();
+
+			if (ViewDestroyedEvent != null)
+			{
+				ViewDestroyedEvent(this);
+			}
+
+			OnViewDestroy();
+			ViewDestruction();
+			_baseView = null;
 		}
 
-		LinkingController = null;
+		public virtual void PreSetupView(IMethodPermitter controller)
+		{
+			if (LinkingController != null)
+				return;
+
+			_baseView.PreSetupView(controller);
+			OnPreViewReady();
+		}
+
+		public virtual void SetupView()
+		{
+			_baseView.SetupView();
+			OnViewReady();
+		}
+
+		protected virtual void ViewDestruction()
+		{
+			if (gameObject != null)
+			{
+				_selfMonoBehaviourDestroy = true;
+				Destroy(gameObject);
+			}
+		}
+
+		protected void OnDestroy()
+		{
+			if (!_selfMonoBehaviourDestroy)
+			{
+				PreUnityViewDestruction();
+				DestroyView();
+				PostUnityViewDestruction();
+			}
+		}
+
+		protected virtual void OnPreViewReady() { }
+		protected virtual void OnViewReady() { }
+		protected virtual void OnViewDestroy() { }
+		protected virtual void PreUnityViewDestruction() { }
+		protected virtual void PostUnityViewDestruction() { }
 	}
 
-	public virtual void SetupView()
+	/// <summary>
+	/// The design is to have the View contain all the Unity / visual specific code and use the Model data to set its visual state.
+	/// </summary>
+	public class BaseView : IView
 	{
-		OnViewReady();
-	}
+		public Action<BaseView> ViewDestroyedEvent;
 
-	protected virtual void OnPreViewReady()
-	{
-	}
-	protected virtual void OnViewReady()
-	{
-	}
-	protected virtual void OnViewDestroy()
-	{
+		public IMethodPermitter LinkingController
+		{
+			get; private set;
+		}
+
+		public virtual void PreDestroyView()
+		{
+
+		}
+
+		public virtual void PreSetupView(IMethodPermitter controller)
+		{
+			if (LinkingController != null)
+				return;
+
+			LinkingController = controller;
+			OnPreViewReady();
+		}
+
+		public virtual void DestroyView()
+		{
+			if (LinkingController == null)
+			{
+				return;
+			}
+
+			OnViewDestroy();
+
+			if (ViewDestroyedEvent != null)
+			{
+				ViewDestroyedEvent(this);
+			}
+
+			LinkingController = null;
+		}
+
+		public virtual void SetupView()
+		{
+			OnViewReady();
+		}
+
+		protected virtual void OnPreViewReady()
+		{
+		}
+		protected virtual void OnViewReady()
+		{
+		}
+		protected virtual void OnViewDestroy()
+		{
+		}
 	}
 }

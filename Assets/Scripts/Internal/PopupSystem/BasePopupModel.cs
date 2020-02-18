@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MVC;
+using System;
 
 public abstract class BasePopupModel : BaseModel
 {

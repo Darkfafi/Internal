@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MVC;
+using System;
 using System.Collections.Generic;
 
 public class Brain<T> : IBrain<T> where T : class
@@ -45,12 +46,12 @@ public class Brain<T> : IBrain<T> where T : class
 
 	public void SetEnabledState(bool enabledState)
 	{
-		if(IsEnabled == enabledState)
+		if (IsEnabled == enabledState)
 			return;
 
 		IsEnabled = enabledState;
 
-		if(IsEnabled)
+		if (IsEnabled)
 		{
 			StateConditionSetGlobalSwitchers();
 			StateConditionSetStateSwitchers(BrainStateMachine.CurrentStateType);
@@ -77,9 +78,9 @@ public class Brain<T> : IBrain<T> where T : class
 
 	public void SetupStateSwitcher(IBrainSwitcher<T> switcher, Type stateType)
 	{
-		if(stateType != null)
+		if (stateType != null)
 		{
-			if(!_stateSwitchers.ContainsKey(stateType))
+			if (!_stateSwitchers.ContainsKey(stateType))
 			{
 				_stateSwitchers.Add(stateType, new List<IBrainSwitcher<T>>());
 			}
@@ -87,7 +88,7 @@ public class Brain<T> : IBrain<T> where T : class
 			_stateSwitchers[stateType].Add(switcher);
 			switcher.Initialize(this);
 
-			if(BrainStateMachine.CurrentStateType == stateType)
+			if (BrainStateMachine.CurrentStateType == stateType)
 			{
 				SetSwitcherActiveState(switcher, true);
 			}
@@ -97,7 +98,7 @@ public class Brain<T> : IBrain<T> where T : class
 			_noStateSwitchers.Add(switcher);
 			switcher.Initialize(this);
 
-			if(BrainStateMachine.CurrentStateType == null)
+			if (BrainStateMachine.CurrentStateType == null)
 			{
 				SetSwitcherActiveState(switcher, true);
 			}
@@ -109,7 +110,7 @@ public class Brain<T> : IBrain<T> where T : class
 		_globalSwitchers.Add(switcher);
 		switcher.Initialize(this);
 
-		if(IsEnabled)
+		if (IsEnabled)
 		{
 			SetSwitcherActiveState(switcher, true);
 		}
@@ -125,11 +126,11 @@ public class Brain<T> : IBrain<T> where T : class
 		DeactivateGlobalSwitchers();
 		DeactivateStateSwitchers(BrainStateMachine.CurrentStateType);
 
-		if(_addedOwnStateMachine)
+		if (_addedOwnStateMachine)
 			BrainStateMachine.Clean();
 
 		BrainStateMachine = null;
-		
+
 		_globalSwitchers.Clear();
 		_globalSwitchers = null;
 
@@ -142,28 +143,28 @@ public class Brain<T> : IBrain<T> where T : class
 
 	private void OnUpdate(float deltaTime, float timeScale)
 	{
-		if(BrainStateMachine == null || !IsEnabled)
+		if (BrainStateMachine == null || !IsEnabled)
 			return;
 
 		List<IBrainSwitcher<T>> switchers = new List<IBrainSwitcher<T>>(_activeSwitchers);
 		List<PotentialSwitch<T>> potentialSwitches = new List<PotentialSwitch<T>>();
 
 		int rollMaxValue = 0;
-		for(int i = 0, c = switchers.Count; i < c; i++)
+		for (int i = 0, c = switchers.Count; i < c; i++)
 		{
 			PotentialSwitch<T>? potentialSwitch = switchers[i].CallCheckForSwitchRequest();
-			if(potentialSwitch.HasValue && potentialSwitch.Value.IsSet && potentialSwitch.Value.PriorityLevel > 0)
+			if (potentialSwitch.HasValue && potentialSwitch.Value.IsSet && potentialSwitch.Value.PriorityLevel > 0)
 			{
-				if(potentialSwitch.Value.Request != null && !potentialSwitch.Value.Request.IsAllowedToCreate())
+				if (potentialSwitch.Value.Request != null && !potentialSwitch.Value.Request.IsAllowedToCreate())
 				{
 					potentialSwitch.Value.Clean();
 					continue;
 				}
-				
+
 				potentialSwitches.Add(potentialSwitch.Value);
 				rollMaxValue += potentialSwitch.Value.PriorityLevel;
 			}
-			else if(potentialSwitch.HasValue)
+			else if (potentialSwitch.HasValue)
 			{
 				potentialSwitch.Value.Clean();
 			}
@@ -174,16 +175,16 @@ public class Brain<T> : IBrain<T> where T : class
 			return b.PriorityLevel - a.PriorityLevel;
 		});
 
-		int choiceRoll = UnityEngine.Random.Range(0, rollMaxValue  + 1);
+		int choiceRoll = UnityEngine.Random.Range(0, rollMaxValue + 1);
 		int currentPrioLevel = 0;
 		PotentialSwitch<T> chosenPotentialSwitch = new PotentialSwitch<T>();
 
-		for(int i = 0, c = potentialSwitches.Count; i < c; i++)
+		for (int i = 0, c = potentialSwitches.Count; i < c; i++)
 		{
 			PotentialSwitch<T> pr = potentialSwitches[i];
-			if(!chosenPotentialSwitch.IsSet)
+			if (!chosenPotentialSwitch.IsSet)
 			{
-				if(choiceRoll > currentPrioLevel && choiceRoll <= currentPrioLevel + pr.PriorityLevel)
+				if (choiceRoll > currentPrioLevel && choiceRoll <= currentPrioLevel + pr.PriorityLevel)
 				{
 					chosenPotentialSwitch = pr;
 				}
@@ -200,10 +201,10 @@ public class Brain<T> : IBrain<T> where T : class
 			}
 		}
 
-		if(chosenPotentialSwitch.IsSet)
+		if (chosenPotentialSwitch.IsSet)
 		{
 			bool setState = false;
-			if(chosenPotentialSwitch.Request == null)
+			if (chosenPotentialSwitch.Request == null)
 			{
 				setState = BrainStateMachine.RequestNoState(chosenPotentialSwitch.Force, false);
 			}
@@ -212,9 +213,9 @@ public class Brain<T> : IBrain<T> where T : class
 				setState = BrainStateMachine.RequestState(chosenPotentialSwitch.Request, chosenPotentialSwitch.Force, false);
 			}
 
-			if(setState && chosenPotentialSwitch.KeysToSetOnSwitch != null)
+			if (setState && chosenPotentialSwitch.KeysToSetOnSwitch != null)
 			{
-				foreach(var pair in chosenPotentialSwitch.KeysToSetOnSwitch)
+				foreach (var pair in chosenPotentialSwitch.KeysToSetOnSwitch)
 				{
 					BrainState.SetKey(pair.Key, pair.Value);
 				}
@@ -226,7 +227,7 @@ public class Brain<T> : IBrain<T> where T : class
 
 	private void Initialize(TimekeeperModel timekeeperModel, StateMachine<T> stateMachine, bool isEnabledFromStart)
 	{
-		if(_timekeeperModel != null)
+		if (_timekeeperModel != null)
 			return;
 
 		_timekeeperModel = timekeeperModel;
@@ -234,7 +235,7 @@ public class Brain<T> : IBrain<T> where T : class
 		BrainStateMachine = stateMachine;
 		BrainStateMachine.StateSetEvent += OnStateSetEvent;
 
-		if(isEnabledFromStart)
+		if (isEnabledFromStart)
 		{
 			SetEnabledState(true);
 		}
@@ -250,9 +251,9 @@ public class Brain<T> : IBrain<T> where T : class
 
 	private void StateConditionSetGlobalSwitchers()
 	{
-		for(int i = 0, c = _globalSwitchers.Count; i < c; i++)
+		for (int i = 0, c = _globalSwitchers.Count; i < c; i++)
 		{
-			if(_globalSwitchers[i].ConditionMet())
+			if (_globalSwitchers[i].ConditionMet())
 			{
 				SetSwitcherActiveState(_globalSwitchers[i], true);
 			}
@@ -265,7 +266,7 @@ public class Brain<T> : IBrain<T> where T : class
 
 	private void DeactivateGlobalSwitchers()
 	{
-		for(int i = 0, c = _globalSwitchers.Count; i < c; i++)
+		for (int i = 0, c = _globalSwitchers.Count; i < c; i++)
 		{
 			SetSwitcherActiveState(_globalSwitchers[i], false);
 		}
@@ -275,11 +276,11 @@ public class Brain<T> : IBrain<T> where T : class
 	{
 		List<IBrainSwitcher<T>> switchers = GetStateSwitchers(stateType);
 
-		if(switchers != null)
+		if (switchers != null)
 		{
-			for(int i = 0, c = switchers.Count; i < c; i++)
+			for (int i = 0, c = switchers.Count; i < c; i++)
 			{
-				if(switchers[i].ConditionMet())
+				if (switchers[i].ConditionMet())
 				{
 					SetSwitcherActiveState(switchers[i], true);
 				}
@@ -295,9 +296,9 @@ public class Brain<T> : IBrain<T> where T : class
 	{
 		List<IBrainSwitcher<T>> switchers = GetStateSwitchers(stateType);
 
-		if(switchers != null)
+		if (switchers != null)
 		{
-			for(int i = 0, c = switchers.Count; i < c; i++)
+			for (int i = 0, c = switchers.Count; i < c; i++)
 			{
 				SetSwitcherActiveState(switchers[i], false);
 			}
@@ -306,16 +307,16 @@ public class Brain<T> : IBrain<T> where T : class
 
 	private void SetSwitcherActiveState(IBrainSwitcher<T> switcher, bool activeState)
 	{
-		if(activeState)
+		if (activeState)
 		{
-			if(switcher.Activate(true) && !_activeSwitchers.Contains(switcher))
+			if (switcher.Activate(true) && !_activeSwitchers.Contains(switcher))
 			{
 				_activeSwitchers.Add(switcher);
 			}
 		}
 		else
 		{
-			if(switcher.Deactivate())
+			if (switcher.Deactivate())
 			{
 				_activeSwitchers.Remove(switcher);
 			}
@@ -326,9 +327,9 @@ public class Brain<T> : IBrain<T> where T : class
 	{
 		List<IBrainSwitcher<T>> switchers;
 
-		if(stateType != null)
+		if (stateType != null)
 		{
-			if(!_stateSwitchers.TryGetValue(stateType, out switchers))
+			if (!_stateSwitchers.TryGetValue(stateType, out switchers))
 			{
 				return new List<IBrainSwitcher<T>>();
 			}
@@ -360,4 +361,3 @@ public interface IBrain<T> where T : class
 	void SetupStateSwitcher(IBrainSwitcher<T> switcher, Type stateType);
 	void SetupGlobalSwitcher(IBrainSwitcher<T> switcher);
 }
-
