@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Internal;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -21,7 +22,7 @@ namespace MVC
 		private Color _enabledComponentColor = new Color(0.2f, 0.4f, 0.75f);
 		private Color _disabledComponentColor = new Color(0.4f, 0.2f, 0.75f);
 
-		[MenuItem("MVC/Model Manipulator")]
+		[MenuItem(InternalConsts.MENU_ITEM_PREFIX + "MVC/Model Manipulator")]
 		static void OpenWindow()
 		{
 			ModelManipulationWindow window = GetWindow<ModelManipulationWindow>("Model Manipulator", true);

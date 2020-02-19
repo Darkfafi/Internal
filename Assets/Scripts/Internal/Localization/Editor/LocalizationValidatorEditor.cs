@@ -1,9 +1,10 @@
-﻿using UnityEditor;
+﻿using Internal;
+using UnityEditor;
 using UnityEngine;
 
 public class LocalizationValidatorEditor
 {
-	[MenuItem("Localization/Validate Localizations")]
+	[MenuItem(InternalConsts.MENU_ITEM_PREFIX + "Localization/Validate Localizations")]
 	public static void Validate()
 	{
 		LocalizationValidator.ValidationResponse response = LocalizationValidator.ValidateLocalization();

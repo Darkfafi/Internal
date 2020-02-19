@@ -1,11 +1,11 @@
-﻿using UnityEditor;
-using UnityEngine;
+﻿using Internal;
+using UnityEditor;
 
 namespace Vertification
 {
-	public class AudioEditorVertification : MonoBehaviour
+	public static class AudioEditorVertification
 	{
-		[MenuItem("Vertification/Audio")]
+		[MenuItem(InternalConsts.MENU_ITEM_PATH_VERTIFICATIONS + "Audio")]
 		public static void VertifyAudioEditor()
 		{
 			AudioVertification.Run();
