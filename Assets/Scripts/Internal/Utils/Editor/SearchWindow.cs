@@ -90,7 +90,7 @@ public class SearchWindow : EditorWindow
 		}
 
 		return true;
-		
+
 	}
 
 	private void OnDestroy()
